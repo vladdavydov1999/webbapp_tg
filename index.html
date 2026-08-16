@@ -15,6 +15,14 @@
             /* ИСПРАВЛЕНИЕ ДЛЯ IOS: предотвращаем сдвиги интерфейса */
             overflow-x: hidden;
             -webkit-tap-highlight-color: transparent;
+            /* ЭТИ СТРОКИ СТРОГО ОБЯЗАТЕЛЬНЫ, ЧТОБЫ СКРЫВАТЬ НЕАКТИВНЫЕ ВКЛАДКИ */
+.tab-content { 
+    display: none; 
+}
+.tab-content.active { 
+    display: block; 
+}
+
         }
         /* ... Весь остальной твой CSS-стиль без изменений ... */
     </style>
