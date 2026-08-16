@@ -2,63 +2,145 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Финансы iOS</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Финансовый Ассистент Pro</title>
     <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-            background-color: #ffffff;
-            color: #000000;
-            margin: 0; padding: 12px;
-            -webkit-text-size-adjust: 100%;
-            -webkit-tap-highlight-color: transparent;
+        /* Современные CSS переменные с поддержкой нативных тем Telegram */
+        :root {
+            --bg-color: var(--tg-theme-bg-color, #f4f6fa);
+            --text-color: var(--tg-theme-text-color, #2c3e50);
+            --card-bg: var(--tg-theme-secondary-bg-color, #ffffff);
+            --accent-color: var(--tg-theme-button-color, #2481cc);
+            --accent-text: var(--tg-theme-button-text-color, #ffffff);
+            --success-color: #2ecc71;
+            --shadow: 0 8px 24px rgba(149, 157, 165, 0.1);
+            --border-radius: 16px;
         }
-        .container { max-width: 100%; margin: 0 auto; }
-        h2 { text-align: center; color: #2481cc; margin: 10px 0; }
-        
-        .tabs { display: table; width: 100%; margin-bottom: 15px; border-collapse: separate; border-spacing: 4px; }
-        .tab-btn {
-            display: table-cell; text-align: center; padding: 12px 2px; border: none; border-radius: 8px;
-            background: #f0f0f0; color: #000000; font-weight: bold; font-size: 13px; cursor: pointer;
-        }
-        .tab-btn.active { background-color: #2481cc; color: #ffffff; }
-        
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
 
-        .card { background: #f0f0f0; padding: 14px; border-radius: 10px; margin-bottom: 12px; }
-        label { display: block; margin: 8px 0 4px; font-weight: bold; font-size: 13px; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0; padding: 20px 16px;
+            overflow-x: hidden;
+            -webkit-tap-highlight-color: transparent;
+            transition: background-color 0.3s ease;
+        }
+
+        .container { max-width: 400px; margin: 0 auto; }
+
+        h2 {
+            text-align: center;
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text-color);
+            margin: 10px 0 24px;
+            letter-spacing: -0.5px;
+        }
+
+        /* Стильные современные табы */
+        .tabs {
+            display: flex;
+            background: rgba(0, 0, 0, 0.04);
+            padding: 4px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+        }
+        .tab-btn {
+            flex: 1; text-align: center; padding: 12px 2px; border: none; border-radius: 10px;
+            background: transparent; color: var(--text-color); font-weight: 600;
+            font-size: 13px; cursor: pointer; opacity: 0.7;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .tab-btn.active {
+            background-color: var(--card-bg);
+            color: var(--accent-color);
+            opacity: 1;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Дизайн карточек */
+        .card {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: var(--border-radius);
+            margin-bottom: 16px;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(0, 0, 0, 0.02);
+        }
+
+        label { display: block; margin: 0 0 6px 4px; font-weight: 600; font-size: 13px; opacity: 0.8; }
+
+        /* Красивые поля ввода */
         input, select {
-            width: 100%; padding: 12px; border: 1px solid #cccccc; border-radius: 8px;
-            box-sizing: border-box; background: #ffffff; color: #000000; font-size: 16px;
+            width: 100%; padding: 14px 16px; border: 1.5px solid rgba(0,0,0,0.08); border-radius: 12px;
+            box-sizing: border-box; background: var(--card-bg); color: var(--text-color);
+            font-size: 16px; font-weight: 500; margin-bottom: 16px; outline: none;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
         }
+        input:focus, select:focus {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px rgba(36, 129, 204, 0.15);
+        }
+
+        /* Кнопки */
         button.calc-btn {
-            width: 100%; background-color: #2481cc; color: #ffffff; border: none;
-            padding: 14px; border-radius: 8px; font-size: 16px; font-weight: bold; margin-top: 12px; cursor: pointer;
+            width: 100%; background-color: var(--accent-color); color: var(--accent-text); border: none;
+            padding: 16px; border-radius: 12px; font-size: 16px; font-weight: 600; margin-top: 8px;
+            cursor: pointer; transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(36, 129, 204, 0.2);
         }
-        .btn-green { background-color: #4caf50; }
+        button.calc-btn:active {
+            transform: scale(0.98);
+            opacity: 0.9;
+        }
+        .btn-green {
+            background-color: var(--success-color) !important;
+            box-shadow: 0 4px 12px rgba(46, 204, 113, 0.2) !important;
+        }
+
+        /* Блоки вывода результатов */
         .result {
-            margin-top: 12px; padding: 12px; background: #e1f5fe;
-            color: #0288d1; border-radius: 8px; font-size: 14px; line-height: 1.4; display: none;
+            margin-top: 20px; padding: 16px; background: rgba(36, 129, 204, 0.07);
+            color: var(--accent-color); border-radius: 12px; font-size: 14px; line-height: 1.5;
+            display: none; border-left: 4px solid var(--accent-color);
+            animation: slideDown 0.3s ease-out;
         }
+        @keyframes slideDown {
+            from { opacity: 0; max-height: 0; padding-top: 0; padding-bottom: 0; overflow: hidden; }
+            to { opacity: 1; max-height: 500px; }
+        }
+
         .debt-item {
-            font-size: 13px; background: #ffffff; padding: 6px 10px; border-radius: 6px; margin-top: 5px;
+            font-size: 13px; background: rgba(0,0,0,0.03); padding: 10px 14px;
+            border-radius: 10px; margin-top: 8px; font-weight: 500;
+            border-left: 3px solid var(--success-color);
         }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>📊 Фин-Приложение</h2>
+    <h2>📊 Фин-Приложение Pro</h2>
 
     <div class="tabs">
-        <div id="btn1" class="tab-btn active" onclick="openTab('tab-compound', 'btn1')">📈 Процент</div>
-        <div id="btn2" class="tab-btn" onclick="openTab('tab-debts', 'btn2')">📉 Долги</div>
-        <div id="btn3" class="tab-btn" onclick="openTab('tab-safety', 'btn3')">💰 Подушка</div>
+        <button id="btn1" class="tab-btn active" onclick="openTab('tab-compound', 'btn1')">📈 Процент</button>
+        <button id="btn2" class="tab-btn" onclick="openTab('tab-debts', 'btn2')">📉 Долги</button>
+        <button id="btn3" class="tab-btn" onclick="openTab('tab-safety', 'btn3')">💰 Подушка</button>
     </div>
 
     <!-- ВКЛАДКА 1 -->
-    <div id="tab-compound" class="tab-content active">
+    <div id="tab-compound" class="tab-content" style="display: block;">
         <div class="card">
             <label>Начальная сумма (руб):</label>
             <input type="number" id="principal" value="50000">
@@ -74,7 +156,7 @@
     </div>
 
     <!-- ВКЛАДКА 2 -->
-    <div id="tab-debts" class="tab-content">
+    <div id="tab-debts" class="tab-content" style="display: none;">
         <div class="card">
             <label>Название долга:</label>
             <input type="text" id="debtName" placeholder="Например: Кредитка">
@@ -84,25 +166,25 @@
             <input type="number" id="debtMin" placeholder="2000">
             <button class="calc-btn btn-green" onclick="addDebt()">➕ Добавить долг</button>
 
-            <div id="addedDebtsBlock" style="margin-top: 15px; display: none;">
-                <strong>Добавленные долги:</strong>
+            <div id="addedDebtsBlock" style="margin-top: 20px; display: none;">
+                <label>Добавленные долги:</label>
                 <div id="debtsList"></div>
             </div>
 
             <label style="margin-top: 20px;">Ежемесячный ускоритель (руб):</label>
             <input type="number" id="debtExtra" value="0">
-            
+
             <button class="calc-btn" onclick="calcSnowball()">🚗 Запустить Снежный ком</button>
             <div id="snowballResult" class="result"></div>
         </div>
     </div>
 
     <!-- ВКЛАДКА 3 -->
-    <div id="tab-safety" class="tab-content">
+    <div id="tab-safety" class="tab-content" style="display: none;">
         <div class="card">
             <label>Твои расходы в месяц (руб):</label>
             <input type="number" id="expenses" value="40000">
-            
+
             <label>Запас безопасности (срок):</label>
             <select id="safetyPeriod">
                 <option value="3">3 месяца (Базовый)</option>
@@ -120,20 +202,19 @@
     var globalDebts = [];
 
     function openTab(tabId, btnId) {
-        document.getElementById('tab-compound').className = 'tab-content';
-        document.getElementById('tab-debts').className = 'tab-content';
-        document.getElementById('tab-safety').className = 'tab-content';
-        
+        document.getElementById('tab-compound').style.display = 'none';
+        document.getElementById('tab-debts').style.display = 'none';
+        document.getElementById('tab-safety').style.display = 'none';
+
+        document.getElementById(tabId).style.display = 'block';
+
         document.getElementById('btn1').className = 'tab-btn';
         document.getElementById('btn2').className = 'tab-btn';
         document.getElementById('btn3').className = 'tab-btn';
-        
-        document.getElementById(tabId).className = 'tab-content active';
+
         document.getElementById(btnId).className = 'tab-btn active';
-        
-        if (document.activeElement) {
-            document.activeElement.blur();
-        }
+
+        if (document.activeElement) { document.activeElement.blur(); }
     }
 
     function calcCompound() {
@@ -160,7 +241,7 @@
     function addDebt() {
         var name = document.getElementById('debtName').value.trim();
         var balance = parseFloat(document.getElementById('debtBalance').value);
-        var min = parseFloat(document.getElementById('debtMin').value);
+                var min = parseFloat(document.getElementById('debtMin').value);
 
         if (!name || isNaN(balance) || isNaN(min)) {
             alert("Заполните все поля долга!"); return;
@@ -229,7 +310,7 @@
             if (!anyLeft) { active = false; }
         }
 
-                var resDiv = document.getElementById('snowballResult');
+        var resDiv = document.getElementById('snowballResult');
         resDiv.style.display = 'block';
         var html = '<b>🗓 План погашения долгов:</b><br><br>';
         for (var n = 0; n < calcDebts.length; n++) {
@@ -238,9 +319,8 @@
         html += '<br>🎉 <b>Полная свобода через: ' + months + ' мес.</b>';
         resDiv.innerHTML = html;
         if (document.activeElement) { document.activeElement.blur(); }
-    } // <--- Вот здесь НА САМОМ ДЕЛЕ закрывается функция calcSnowball!
+    }
 
-    // А вот эту функцию ты случайно стер при прошлом копировании:
     function calcSafetyNet() {
         var expenses = parseFloat(document.getElementById('expenses').value) || 0;
         var period = parseInt(document.getElementById('safetyPeriod').value);
@@ -253,15 +333,8 @@
         if (document.activeElement) { document.activeElement.blur(); }
     }
 </script>
-
-
-    
-        
-         
-   
- 
-     
-
+</body>
+</html>
 
   
 
