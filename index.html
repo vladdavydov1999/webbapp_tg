@@ -7,7 +7,7 @@
     <title>Финансовый Ассистент</title>
     <script src="https://telegram.org"></script>
     <style>
-        body {
+                body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background-color: var(--tg-theme-bg-color, #fff);
             color: var(--tg-theme-text-color, #000);
@@ -15,13 +15,16 @@
             /* ИСПРАВЛЕНИЕ ДЛЯ IOS: предотвращаем сдвиги интерфейса */
             overflow-x: hidden;
             -webkit-tap-highlight-color: transparent;
-            /* ЭТИ СТРОКИ СТРОГО ОБЯЗАТЕЛЬНЫ, ЧТОБЫ СКРЫВАТЬ НЕАКТИВНЫЕ ВКЛАДКИ */
-.tab-content { 
-    display: none; 
-}
-.tab-content.active { 
-    display: block; 
-}
+        } /* <--- ВОТ ЭТОЙ СКОБКИ У ТЕБЯ НЕ ХВАТАЕТ НА СТРОКЕ 27! */
+
+        /* ЭТИ СТРОКИ СТРОГО ОБЯЗАТЕЛЬНЫ, ЧТОБЫ СКРЫВАТЬ НЕАКТИВНЫЕ ВКЛАДКИ */
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+
 
         }
         /* ... Весь остальной твой CSS-стиль без изменений ... */
