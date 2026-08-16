@@ -5,7 +5,6 @@
     <!-- ЖЕСТКИЙ ФИКС ДЛЯ IOS: Запрет зума при клике на инпуты -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Финансы iOS</title>
-    <script src="https://telegram.org"></script>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, sans-serif;
@@ -127,12 +126,6 @@
 </div>
 
 <script>
-    var tg = window.Telegram.WebApp;
-    if(tg) {
-        tg.ready();
-        setTimeout(function() { tg.expand(); }, 300);
-    }
-
     var globalDebts = [];
 
     // Самый примитивный способ переключения вкладок без использования "event"
