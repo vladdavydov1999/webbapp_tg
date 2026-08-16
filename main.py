@@ -1,102 +1,115 @@
 import telebot
-import time  # Подключаем библиотеку для работы со временем
+import time
+import requests  
 
-TOKEN = 'TOKEN'
+TOKEN = '8806371020:AAEWYJuSncBvdEGksANUfZEyx1sUdp6QR3c'
 bot = telebot.TeleBot(TOKEN)
 
-# Словарь для хранения времени последнего сообщения от каждого пользователя
 last_message_time = {}
 
-
-# Функция проверки: не слишком ли быстро отправлено сообщение
 def is_spam(chat_id):
     current_time = time.time()
-    # Если пользователь нажал кнопку впервые, его еще нет в словаре
     if chat_id not in last_message_time:
         last_message_time[chat_id] = current_time
         return False
-
-    # Считаем, сколько секунд прошло с прошлого нажатия
     time_passed = current_time - last_message_time[chat_id]
-    last_message_time[chat_id] = current_time  # Обновляем время на текущее
-
-    # Если прошло меньше 1.5 секунд — это спам/двойной клик
+    last_message_time[chat_id] = current_time
     if time_passed < 1.5:
         return True
     return False
 
+# Функция получения реальных курсов валют через бесплатное API
+def get_forex_rates():
+    try:
+        # Используем открытое API биржевых курсов к доллару США (USD)
+        url = "https://er-api.com"
+        response = requests.get(url, timeout=5)
+        data = response.json()
+        
+        if data["result"] == "success":
+            rates = data["rates"]
+            # Считаем обратные курсы доллара к другим валютам
+            usd_rub = rates.get("RUB", 0)
+            usd_eur = rates.get("EUR", 0)
+            usd_cny = rates.get("CNY", 0)
+            
+            # Считаем кросс-курсы (например, сколько рублей в одном евро)
+            eur_rub = usd_rub / usd_eur if usd_eur else 0
+            cny_rub = usd_rub / usd_cny if usd_cny else 0
+
+            text = (
+                "💵 **Официальные мировые валюты:**\n\n"
+                f"🇺🇸 1 USD = {usd_rub:.2f} RUB\n"
+                f"🇪🇺 1 EUR = {eur_rub:.2f} RUB\n"
+                f"🇨🇳 1 CNY = {cny_rub:.2f} RUB\n\n"
+                "📊 *Данные обновляются автоматически в режиме реального времени.*"
+            )
+            return text
+        else:
+            return "⚠️ Не удалось получить свежие данные от биржи. Попробуйте позже."
+    except Exception as e:
+        print(f"Ошибка API: {e}")
+        return "❌ Ошибка при запросе котировок. Проверьте подключение к интернету."
 
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
-    # Если это двойной клик — игнорируем его
-    if is_spam(message.chat.id):
-        return
-
+    if is_spam(message.chat.id): return
     welcome_text = (
-        "👋 <b>Привет! Я твой личный Финансовый Ассистент.</b>\n\n"
-        "Я помогаю рассчитывать сложный процент и составлять графики закрытия долгов.\n\n"
+        "👋 <b>Привет! Я твой личный Финансовый Ассистент Pro.</b>\n\n"
         "🚀 <b>Как пользоваться ботом?</b>\n"
-        "Просто нажми на синюю кнопку <b>«Open»</b> (или иконку слева от поля ввода), "
-        "чтобы открыть удобный визуальный калькулятор!\n\n"
-        "📖 Или используй меню команд ниже, чтобы почитать полезные финансовые статьи:\n"
-        "/snowball — Как работает метод 'Снежного кома'?\n"
+        "Нажми кнопку <b>«Open»</b> в углу экрана, чтобы открыть визуальный калькулятор!\n\n"
+        "📖 <b>Команды финансовой аналитики:</b>\n"
+        "/rates — Актуальные курсы мировых валют\n"
+        "/snowball — Стратегия закрытия долгов\n"
         "/compound — Магия сложного процента\n"
-        "/safety_net — Как рассчитать финансовую подушку?"
+        "/safety_net — Расчет финансовой подушки"
     )
     bot.send_message(message.chat.id, welcome_text, parse_mode="HTML")
 
+# Новая профессиональная команда для отслеживания валютных рынков
+@bot.message_handler(commands=['rates'])
+def show_rates(message):
+    if is_spam(message.chat.id): return
+    # Отправляем сообщение о загрузке, так как запрос к бирже может занять 1-2 секунды
+    waiting_msg = bot.send_message(message.chat.id, "🔄 Запрашиваю свежие котировки с биржи...")
+    
+    # Получаем текст с курсами
+    rates_text = get_forex_rates()
+    
+    # Удаляем сообщение о загрузке и присылаем финальный результат
+    bot.delete_message(message.chat.id, waiting_msg.message_id)
+    bot.send_message(message.chat.id, rates_text, parse_mode="Markdown")
 
 @bot.message_handler(commands=['snowball'])
 def info_snowball(message):
     if is_spam(message.chat.id): return
-    text = (
-        "📉 <b>Метод 'Снежного кома' (Debt Snowball):</b>\n\n"
-        "1. Выпиши все долги и отсортируй их от меньшего к большему по сумме.\n"
-        "2. Плати по всем кредитам строго минимальные платежи.\n"
-        "3. Все свободные деньги (ускоритель) направляй на досрочное гашение самого маленького долга.\n"
-        "4. Когда мелкий долг закроется, освободившаяся сумма перекидывается на следующий по величине кредит.\n\n"
-        "💡 <i>Этот метод признан самым эффективным психологически!</i>"
-    )
-    bot.send_message(message.chat.id, text, parse_mode="HTML")
-
+    text = "📉 **Метод 'Снежного кома'**: отсортируй долги от меньшего к большему и направляй ускоритель на первый."
+    bot.send_message(message.chat.id, text, parse_mode="Markdown")
 
 @bot.message_handler(commands=['compound'])
 def info_compound(message):
     if is_spam(message.chat.id): return
-    text = (
-        "📈 <b>Магия сложного процента:</b>\n\n"
-        "Сложный процент — это начисление процентов на проценты. "
-        "Когда твоя прибыль добавляется к начальному капиталу, "
-        "в следующем периоде процент начисляется на уже увеличенную сумму.\n\n"
-        "⏳ На горизонте 10–15 лет сложный процент способен превратить скромные ежемесячные пополнения в солидный капитал. Проверь это в нашем приложении!"
-    )
-    bot.send_message(message.chat.id, text, parse_mode="HTML")
-
+    text = "📈 **Сложный процент**: начисление процентов на проценты. Время — твой главный союзник."
+    bot.send_message(message.chat.id, text, parse_mode="Markdown")
 
 @bot.message_handler(commands=['safety_net'])
 def info_safety(message):
     if is_spam(message.chat.id): return
-    text = (
-        "💰 <b>Финансовая подушка безопасности:</b>\n\n"
-        "Это неприкосновенный запас денег на случай форс-мажоров (потеря работы, ремонт, здоровье).\n\n"
-        "📐 Посчитай обязательные расходы за месяц (еда, жилье, кредиты) и умножь эту сумму на 3 или 6 месяцев. Держи эти деньги на накопительном счете."
-    )
-    bot.send_message(message.chat.id, text, parse_mode="HTML")
-
+    text = "💰 **Подушка безопасности**: сумма обязательных расходов за 3-6 месяцев, хранящаяся на накопительном счете."
+    bot.send_message(message.chat.id, text, parse_mode="Markdown")
 
 @bot.message_handler(func=lambda message: True)
 def echo_all(message):
     if is_spam(message.chat.id): return
-    bot.send_message(
-        message.chat.id,
-        "🤖 Я понимаю только команды из меню. Нажми кнопку <b>«Open»</b>, чтобы запустить приложение!",
-        parse_mode="HTML"
-    )
-
+    bot.send_message(message.chat.id, "🤖 Я понимаю только команды из меню. Нажми кнопку <b>«Open»</b> для калькуляторов!", parse_mode="HTML")
 
 if __name__ == '__main__':
-    print("Бот перезапущен с защитой от двойных кликов...")
+    print("Профессиональная версия бота с модулем валют запущена...")
     bot.infinity_polling()
+
+ 
+
+
 
 
 
