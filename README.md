@@ -5,9 +5,6 @@
 
 Интерактивное мини-приложение (Mini App) для Telegram, разработанное для управления личными финансами, расчета инвестиций и планирования выплат по долгам.
 
-## 🚀 Живое демо
-👉 **[Открыть Web App](https://github.io)** *(или укажи свою точную ссылку на GitHub Pages)*
-
 ---
 
 ## 🛠 Функционал приложения
@@ -31,7 +28,7 @@
 
 ### 1. Клонируйте репозиторий:
 ```bash
-git clone https://github.com
+[git clone https://github.com](https://github.com/vladdavydov1999)
 cd webapp_tg
 ```
 
