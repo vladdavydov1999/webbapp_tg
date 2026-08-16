@@ -2,32 +2,61 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <!-- ИСПРАВЛЕНИЕ ДЛЯ IOS: Запрещаем масштабирование при фокусе на инпутах -->
+    <!-- ИСПРАВЛЕНИЕ ДЛЯ IOS: Запрещаем неконтролируемое масштабирование при фокусе на инпутах -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Финансовый Ассистент</title>
+    <!-- Подключаем официальный скрипт Telegram Web App API -->
     <script src="https://telegram.org"></script>
     <style>
-                body {
+        body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background-color: var(--tg-theme-bg-color, #fff);
             color: var(--tg-theme-text-color, #000);
             margin: 0; padding: 16px;
-            /* ИСПРАВЛЕНИЕ ДЛЯ IOS: предотвращаем сдвиги интерфейса */
+            /* ИСПРАВЛЕНИЕ ДЛЯ IOS: предотвращаем случайные сдвиги интерфейса */
             overflow-x: hidden;
             -webkit-tap-highlight-color: transparent;
-        } /* <--- ВОТ ЭТОЙ СКОБКИ У ТЕБЯ НЕ ХВАТАЕТ НА СТРОКЕ 27! */
-
-        /* ЭТИ СТРОКИ СТРОГО ОБЯЗАТЕЛЬНЫ, ЧТОБЫ СКРЫВАТЬ НЕАКТИВНЫЕ ВКЛАДКИ */
-        .tab-content {
-            display: none;
         }
-        .tab-content.active {
-            display: block;
+        .container { max-width: 400px; margin: 0 auto; }
+        h2 { text-align: center; color: #2481cc; margin-bottom: 10px; }
+        
+        /* Вкладки (Табы) */
+        .tabs { display: flex; gap: 4px; margin-bottom: 16px; }
+        .tab-btn {
+            flex: 1; padding: 10px 4px; border: none; border-radius: 8px;
+            background: var(--tg-theme-secondary-bg-color, #f0f0f0);
+            color: var(--tg-theme-text-color, #000); cursor: pointer; font-weight: bold;
+            font-size: 13px;
         }
+        .tab-btn.active { background-color: #2481cc; color: white; }
+        
+        /* КРИТИЧЕСКИ ВАЖНО: Скрытие и показ неактивных вкладок */
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
 
-
+        .card {
+            background: var(--tg-theme-secondary-bg-color, #f0f0f0);
+            padding: 16px; border-radius: 12px; margin-bottom: 16px;
         }
-        /* ... Весь остальной твой CSS-стиль без изменений ... */
+        label { display: block; margin: 10px 0 5px; font-weight: bold; font-size: 14px; }
+        input, select {
+            width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 8px;
+            box-sizing: border-box; background: var(--tg-theme-bg-color, #fff);
+            color: var(--tg-theme-text-color, #000); font-size: 14px;
+        }
+        button {
+            width: 100%; background-color: #2481cc; color: white; border: none;
+            padding: 12px; border-radius: 8px; font-size: 16px; cursor: pointer; margin-top: 15px;
+        }
+        .btn-secondary { background-color: #4caf50; margin-top: 5px; }
+        .result {
+            margin-top: 15px; padding: 12px; background: #e1f5fe;
+            color: #0288d1; border-radius: 8px; font-size: 14px; line-height: 1.4; display: none;
+        }
+        .debt-item {
+            font-size: 13px; background: var(--tg-theme-bg-color, #fff);
+            padding: 6px 10px; border-radius: 6px; margin-top: 5px;
+        }
     </style>
 </head>
 <body>
@@ -35,7 +64,7 @@
 <div class="container">
     <h2>📊 Фин-Приложение</h2>
 
-    <!-- Кнопки переключения (Теперь их три!) -->
+    <!-- Кнопки переключения меню -->
     <div class="tabs">
         <button class="tab-btn active" onclick="switchTab('tab-compound')">📈 Процент</button>
         <button class="tab-btn" onclick="switchTab('tab-debts')">📉 Долги</button>
@@ -78,7 +107,7 @@
 
             <label style="margin-top: 20px;">Ежемесячный ускоритель (руб):</label>
             <input type="number" id="debtExtra" value="0">
-
+            
             <button onclick="calcSnowball()">🚗 Запустить Снежный ком</button>
             <div id="snowballResult" class="result"></div>
         </div>
@@ -89,7 +118,7 @@
         <div class="card">
             <label>Твои расходы в месяц (руб):</label>
             <input type="number" id="expenses" value="40000" placeholder="Еда, аренда, платежи...">
-
+            
             <label>Запас безопасности (срок):</label>
             <select id="safetyPeriod">
                 <option value="3">3 месяца (Базовый)</option>
@@ -105,14 +134,14 @@
 
 <script>
     const tg = window.Telegram.WebApp;
-    tg.ready();
-
-    // ИСПРАВЛЕНИЕ ДЛЯ IOS: Принудительное расширение окна
+    tg.ready(); 
+    
+    // ИСПРАВЛЕНИЕ ДЛЯ IOS: Разворачиваем окно Mini App плавно с небольшой задержкой
     setTimeout(() => {
         tg.expand();
     }, 200);
 
-    // ИСПРАВЛЕНИЕ ДЛЯ IOS: Лечим залипание клавиатуры и потерю фокуса
+    // ИСПРАВЛЕНИЕ ДЛЯ IOS: Снимаем фокус с полей при клике мимо, чтобы убиралась клавиатура
     document.addEventListener('click', event => {
         const focusedElement = document.activeElement;
         if (focusedElement && focusedElement !== event.target && ['INPUT', 'SELECT'].includes(focusedElement.tagName)) {
@@ -120,10 +149,89 @@
         }
     });
 
-    // ... Твои JS функции calcCompound(), addDebt(), calcSnowball(), calcSafetyNet() ...
-</script>
-</body>
-</html>
-     
-          
-              
+    let globalDebts = [];
+
+    // Функция переключения вкладок
+    function switchTab(tabId) {
+        document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+        document.getElementById(tabId).classList.add('active');
+        event.currentTarget.classList.add('active');
+    }
+
+    // Расчет сложного процента
+    function calcCompound() {
+        const p = parseFloat(document.getElementById('principal').value) || 0;
+        const m = parseFloat(document.getElementById('monthly').value) || 0;
+        const r = (parseFloat(document.getElementById('rate').value) || 0) / 100 / 12;
+        const months = (parseInt(document.getElementById('years').value) || 0) * 12;
+
+        let total = p;
+        let invested = p;
+        for (let i = 0; i < months; i++) {
+            total = total * (1 + r) + m;
+            invested += m;
+        }
+
+        const resDiv = document.getElementById('compoundResult');
+        resDiv.style.display = 'block';
+        resDiv.innerHTML = `🏆 <b>Итоговый капитал:</b> ${total.toLocaleString('ru-RU', {maximumFractionDigits: 2})} руб.<br>` +
+                           `💰 Твои вложения: ${invested.toLocaleString('ru-RU', {maximumFractionDigits: 2})} руб.<br>` +
+                           `📈 Из них проценты: ${(total - invested).toLocaleString('ru-RU', {maximumFractionDigits: 2})} руб.`;
+    }
+
+    // Добавление долга в список
+    function addDebt() {
+        const name = document.getElementById('debtName').value.trim();
+        const balance = parseFloat(document.getElementById('debtBalance').value);
+        const min = parseFloat(document.getElementById('debtMin').value);
+
+        if (!name || isNaN(balance) || isNaN(min)) {
+            alert("Заполните все поля долга цифрами!"); return;
+        }
+
+        globalDebts.push({ name, balance, min_payment: min });
+
+        const listDiv = document.getElementById('debtsList');
+        document.getElementById('addedDebtsBlock').style.display = 'block';
+        listDiv.innerHTML += `<div class="debt-item">📌 <b>${name}</b>: ${balance.toLocaleString()} руб. (мин: ${min} руб.)</div>`;
+
+        document.getElementById('debtName').value = '';
+        document.getElementById('debtBalance').value = '';
+        document.getElementById('debtMin').value = '';
+    }
+
+    // Расчет Снежного кома
+    function calcSnowball() {
+        if (globalDebts.length === 0) { alert("Сначала добавьте хотя бы один долг!"); return; }
+        const extra = parseFloat(document.getElementById('debtExtra').value) || 0;
+        let calcDebts = globalDebts.map(d => ({ ...d }));
+        calcDebts.sort((a, b) => a.balance - b.balance);
+
+        let months = 0;
+        while (calcDebts.some(d => d.balance > 0) && months < 240) {
+            months++;
+            let currentExtraPool = extra;
+
+            for (let d of calcDebts) {
+                if (d.balance > 0) {
+                    let actualMin = Math.min(d.min_payment, d.balance);
+                    d.balance -= actualMin;
+                }
+            }
+
+            for (let d of calcDebts) {
+                if (d.balance > 0) {
+                    let payOff = Math.min(currentExtraPool, d.balance);
+                    d.balance -= payOff;
+                    currentExtraPool -= payOff;
+                    if (currentExtraPool <= 0) break;
+                }
+            }
+
+            for (let d of calcDebts) {
+
+ 
+  
+
+   
