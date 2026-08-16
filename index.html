@@ -2,10 +2,8 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <!-- ИСПРАВЛЕНИЕ ДЛЯ IOS: Запрещаем неконтролируемое масштабирование при фокусе на инпутах -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Финансовый Ассистент</title>
-    <!-- Подключаем официальный скрипт Telegram Web App API -->
     <script src="https://telegram.org"></script>
     <style>
         body {
@@ -13,7 +11,6 @@
             background-color: var(--tg-theme-bg-color, #fff);
             color: var(--tg-theme-text-color, #000);
             margin: 0; padding: 16px;
-            /* ИСПРАВЛЕНИЕ ДЛЯ IOS: предотвращаем случайные сдвиги интерфейса */
             overflow-x: hidden;
             -webkit-tap-highlight-color: transparent;
         }
@@ -30,7 +27,6 @@
         }
         .tab-btn.active { background-color: #2481cc; color: white; }
         
-        /* КРИТИЧЕСКИ ВАЖНО: Скрытие и показ неактивных вкладок */
         .tab-content { display: none; }
         .tab-content.active { display: block; }
 
@@ -64,14 +60,14 @@
 <div class="container">
     <h2>📊 Фин-Приложение</h2>
 
-    <!-- Кнопки переключения меню -->
+    <!-- Передаем event в функцию switchTab -->
     <div class="tabs">
-        <button class="tab-btn active" onclick="switchTab('tab-compound')">📈 Процент</button>
-        <button class="tab-btn" onclick="switchTab('tab-debts')">📉 Долги</button>
-        <button class="tab-btn" onclick="switchTab('tab-safety')">💰 Подушка</button>
+        <button class="tab-btn active" onclick="switchTab(event, 'tab-compound')">📈 Процент</button>
+        <button class="tab-btn" onclick="switchTab(event, 'tab-debts')">📉 Долги</button>
+        <button class="tab-btn" onclick="switchTab(event, 'tab-safety')">💰 Подушка</button>
     </div>
 
-    <!-- ВКЛАДКА 1: Сложный процент -->
+    <!-- ВКЛАДКА 1 -->
     <div id="tab-compound" class="tab-content active">
         <div class="card">
             <label>Начальная сумма (руб):</label>
@@ -87,7 +83,7 @@
         </div>
     </div>
 
-    <!-- ВКЛАДКА 2: Снежный ком -->
+    <!-- ВКЛАДКА 2 -->
     <div id="tab-debts" class="tab-content">
         <div class="card">
             <div id="debtForm">
@@ -113,7 +109,7 @@
         </div>
     </div>
 
-    <!-- ВКЛАДКА 3: Финансовая подушка -->
+    <!-- ВКЛАДКА 3 -->
     <div id="tab-safety" class="tab-content">
         <div class="card">
             <label>Твои расходы в месяц (руб):</label>
@@ -136,30 +132,30 @@
     const tg = window.Telegram.WebApp;
     tg.ready(); 
     
-    // ИСПРАВЛЕНИЕ ДЛЯ IOS: Разворачиваем окно Mini App плавно с небольшой задержкой
     setTimeout(() => {
         tg.expand();
     }, 200);
 
-    // ИСПРАВЛЕНИЕ ДЛЯ IOS: Снимаем фокус с полей при клике мимо, чтобы убиралась клавиатура
-    document.addEventListener('click', event => {
+    document.addEventListener('click', function(e) {
         const focusedElement = document.activeElement;
-        if (focusedElement && focusedElement !== event.target && ['INPUT', 'SELECT'].includes(focusedElement.tagName)) {
+        if (focusedElement && focusedElement !== e.target && ['INPUT', 'SELECT'].includes(focusedElement.tagName)) {
             focusedElement.blur();
         }
     });
 
     let globalDebts = [];
 
-    // Функция переключения вкладок
-    function switchTab(tabId) {
-        document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-        document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+    // ИСПРАВЛЕНО: Теперь event передается явно и Safari/Telegram его распознают
+    function switchTab(e, tabId) {
+        document.querySelectorAll('.tab-content').forEach(function(el) { el.classList.remove('active'); });
+        document.querySelectorAll('.tab-btn').forEach(function(el) { el.classList.remove('active'); });
+        
         document.getElementById(tabId).classList.add('active');
-        event.currentTarget.classList.add('active');
+        if (e && e.currentTarget) {
+            e.currentTarget.classList.add('active');
+        }
     }
 
-    // Расчет сложного процента
     function calcCompound() {
         const p = parseFloat(document.getElementById('principal').value) || 0;
         const m = parseFloat(document.getElementById('monthly').value) || 0;
@@ -180,7 +176,6 @@
                            `📈 Из них проценты: ${(total - invested).toLocaleString('ru-RU', {maximumFractionDigits: 2})} руб.`;
     }
 
-    // Добавление долга в список
     function addDebt() {
         const name = document.getElementById('debtName').value.trim();
         const balance = parseFloat(document.getElementById('debtBalance').value);
@@ -201,15 +196,14 @@
         document.getElementById('debtMin').value = '';
     }
 
-    // Расчет Снежного кома
     function calcSnowball() {
         if (globalDebts.length === 0) { alert("Сначала добавьте хотя бы один долг!"); return; }
         const extra = parseFloat(document.getElementById('debtExtra').value) || 0;
-        let calcDebts = globalDebts.map(d => ({ ...d }));
-        calcDebts.sort((a, b) => a.balance - b.balance);
+        let calcDebts = globalDebts.map(function(d) { return { ...d }; });
+        calcDebts.sort(function(a, b) { return a.balance - b.balance; });
 
         let months = 0;
-        while (calcDebts.some(d => d.balance > 0) && months < 240) {
+        while (calcDebts.some(function(d) { return d.balance > 0; }) && months < 240) {
             months++;
             let currentExtraPool = extra;
 
@@ -230,8 +224,21 @@
             }
 
             for (let d of calcDebts) {
+                if (d.balance <= 0 && !d.closedIn) d.closedIn = months;
+            }
+        }
 
- 
-  
+        const resDiv = document.getElementById('snowballResult');
+        resDiv.style.display = 'block';
+        let html = `<b>🗓 План погашения долгов:</b><br><br>`;
+        calcDebts.forEach(function(d, i) {
+            html += `${i+1}. <b>${d.name}</b> — закроется через <b>${d.closedIn || 'Много'}</b> мес.<br>`;
+        });
 
+            
+     
+
+
+    
    
+  
