@@ -2,47 +2,39 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <!-- ЖЕСТКИЙ ФИКС ДЛЯ IOS: Запрет зума при клике на инпуты -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Финансы iOS</title>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-            background-color: var(--tg-theme-bg-color, #ffffff);
-            color: var(--tg-theme-text-color, #000000);
+            background-color: #ffffff;
+            color: #000000;
             margin: 0; padding: 12px;
             -webkit-text-size-adjust: 100%;
             -webkit-tap-highlight-color: transparent;
         }
         .container { max-width: 100%; margin: 0 auto; }
         h2 { text-align: center; color: #2481cc; margin: 10px 0; }
-
-        /* Простые кнопки переключения */
+        
         .tabs { display: table; width: 100%; margin-bottom: 15px; border-collapse: separate; border-spacing: 4px; }
         .tab-btn {
             display: table-cell; text-align: center; padding: 12px 2px; border: none; border-radius: 8px;
-            background: var(--tg-theme-secondary-bg-color, #f0f0f0);
-            color: var(--tg-theme-text-color, #000000); font-weight: bold; font-size: 13px;
+            background: #f0f0f0; color: #000000; font-weight: bold; font-size: 13px; cursor: pointer;
         }
         .tab-btn.active { background-color: #2481cc; color: #ffffff; }
-
-        /* Простое скрытие */
+        
         .tab-content { display: none; }
         .tab-content.active { display: block; }
 
-        .card {
-            background: var(--tg-theme-secondary-bg-color, #f0f0f0);
-            padding: 14px; border-radius: 10px; margin-bottom: 12px;
-        }
+        .card { background: #f0f0f0; padding: 14px; border-radius: 10px; margin-bottom: 12px; }
         label { display: block; margin: 8px 0 4px; font-weight: bold; font-size: 13px; }
         input, select {
             width: 100%; padding: 12px; border: 1px solid #cccccc; border-radius: 8px;
-            box-sizing: border-box; background: var(--tg-theme-bg-color, #ffffff);
-            color: var(--tg-theme-text-color, #000000); font-size: 16px; /* 16px предотвращает зум на iOS */
+            box-sizing: border-box; background: #ffffff; color: #000000; font-size: 16px;
         }
         button.calc-btn {
             width: 100%; background-color: #2481cc; color: #ffffff; border: none;
-            padding: 14px; border-radius: 8px; font-size: 16px; font-weight: bold; margin-top: 12px;
+            padding: 14px; border-radius: 8px; font-size: 16px; font-weight: bold; margin-top: 12px; cursor: pointer;
         }
         .btn-green { background-color: #4caf50; }
         .result {
@@ -50,8 +42,7 @@
             color: #0288d1; border-radius: 8px; font-size: 14px; line-height: 1.4; display: none;
         }
         .debt-item {
-            font-size: 13px; background: var(--tg-theme-bg-color, #ffffff);
-            padding: 6px 10px; border-radius: 6px; margin-top: 5px;
+            font-size: 13px; background: #ffffff; padding: 6px 10px; border-radius: 6px; margin-top: 5px;
         }
     </style>
 </head>
@@ -100,7 +91,7 @@
 
             <label style="margin-top: 20px;">Ежемесячный ускоритель (руб):</label>
             <input type="number" id="debtExtra" value="0">
-
+            
             <button class="calc-btn" onclick="calcSnowball()">🚗 Запустить Снежный ком</button>
             <div id="snowballResult" class="result"></div>
         </div>
@@ -111,7 +102,7 @@
         <div class="card">
             <label>Твои расходы в месяц (руб):</label>
             <input type="number" id="expenses" value="40000">
-
+            
             <label>Запас безопасности (срок):</label>
             <select id="safetyPeriod">
                 <option value="3">3 месяца (Базовый)</option>
@@ -128,24 +119,21 @@
 <script>
     var globalDebts = [];
 
-    // Самый примитивный способ переключения вкладок без использования "event"
     function openTab(tabId, btnId) {
-        // Скрываем все вкладки
         document.getElementById('tab-compound').className = 'tab-content';
         document.getElementById('tab-debts').className = 'tab-content';
         document.getElementById('tab-safety').className = 'tab-content';
-
-        // Убираем активность со всех кнопок
+        
         document.getElementById('btn1').className = 'tab-btn';
         document.getElementById('btn2').className = 'tab-btn';
         document.getElementById('btn3').className = 'tab-btn';
-
-        // Активируем нужную вкладку и кнопку
+        
         document.getElementById(tabId).className = 'tab-content active';
         document.getElementById(btnId).className = 'tab-btn active';
-
-        // Скрываем клавиатуру iPhone при переключении табов
-        document.activeElement.blur();
+        
+        if (document.activeElement) {
+            document.activeElement.blur();
+        }
     }
 
     function calcCompound() {
@@ -164,9 +152,9 @@
 
         var resDiv = document.getElementById('compoundResult');
         resDiv.style.display = 'block';
-        resDiv.innerHTML = '🏆 <b>Итоговый капитал:</b> ' + Math.round(total) + ' руб.<br>' +
-                           '💰 Твои вложения: ' + Math.round(invested) + ' руб.<br>' +
-                           '📈 Из них проценты: ' + Math.round(total - invested) + ' руб.';
+        resDiv.innerHTML = '🏆 <b>Итоговый капитал:</b> ' + Math.round(total).toLocaleString('ru-RU') + ' руб.<br>' +
+                           '💰 Твои вложения: ' + Math.round(invested).toLocaleString('ru-RU') + ' руб.<br>' +
+                           '📈 Из них проценты: ' + Math.round(total - invested).toLocaleString('ru-RU') + ' руб.';
     }
 
     function addDebt() {
@@ -182,18 +170,18 @@
 
         var listDiv = document.getElementById('debtsList');
         document.getElementById('addedDebtsBlock').style.display = 'block';
-        listDiv.innerHTML += '<div class="debt-item">📌 <b>' + name + '</b>: ' + balance + ' руб. (мин: ' + min + ' руб.)</div>';
+        listDiv.innerHTML += '<div class="debt-item">📌 <b>' + name + '</b>: ' + balance.toLocaleString('ru-RU') + ' руб. (мин: ' + min + ' руб.)</div>';
 
         document.getElementById('debtName').value = '';
         document.getElementById('debtBalance').value = '';
         document.getElementById('debtMin').value = '';
-        document.activeElement.blur();
+        if (document.activeElement) { document.activeElement.blur(); }
     }
 
     function calcSnowball() {
         if (globalDebts.length === 0) { alert("Сначала добавьте долг!"); return; }
         var extra = parseFloat(document.getElementById('debtExtra').value) || 0;
-
+        
         var calcDebts = [];
         for (var i = 0; i < globalDebts.length; i++) {
             calcDebts.push({
@@ -203,12 +191,12 @@
                 closedIn: 0
             });
         }
-
+        
         calcDebts.sort(function(a, b) { return a.balance - b.balance; });
 
         var months = 0;
         var active = true;
-
+        
         while (active && months < 240) {
             months++;
             var currentExtraPool = extra;
@@ -226,9 +214,54 @@
                     var payOff = Math.min(currentExtraPool, calcDebts[k].balance);
                     calcDebts[k].balance -= payOff;
                     currentExtraPool -= payOff;
-</script>   
-</body>
-</html>
+                    if (currentExtraPool <= 0) break;
+                }
+            }
+
+            for (var m = 0; m < calcDebts.length; m++) {
+                if (calcDebts[m].balance <= 0 && calcDebts[m].closedIn === 0) {
+                    calcDebts[m].closedIn = months;
+                }
+                if (calcDebts[m].balance > 0) {
+                    anyLeft = true;
+                }
+            }
+            if (!anyLeft) { active = false; }
+        }
+
+                var resDiv = document.getElementById('snowballResult');
+        resDiv.style.display = 'block';
+        var html = '<b>🗓 План погашения долгов:</b><br><br>';
+        for (var n = 0; n < calcDebts.length; n++) {
+            html += (n+1) + '. <b>' + calcDebts[n].name + '</b> — через <b>' + calcDebts[n].closedIn + '</b> мес.<br>';
+        }
+        html += '<br>🎉 <b>Полная свобода через: ' + months + ' мес.</b>';
+        resDiv.innerHTML = html;
+        if (document.activeElement) { document.activeElement.blur(); }
+    } // <--- Вот здесь НА САМОМ ДЕЛЕ закрывается функция calcSnowball!
+
+    // А вот эту функцию ты случайно стер при прошлом копировании:
+    function calcSafetyNet() {
+        var expenses = parseFloat(document.getElementById('expenses').value) || 0;
+        var period = parseInt(document.getElementById('safetyPeriod').value);
+        var totalRequired = expenses * period;
+
+        var resDiv = document.getElementById('safetyResult');
+        resDiv.style.display = 'block';
+        resDiv.innerHTML = '🛡️ <b>Размер подушки:</b> ' + totalRequired.toLocaleString('ru-RU') + ' руб.<br><br>' +
+                           '💡 <i>Это ваш щит от форс-мажоров на ' + period + ' мес.</i>';
+        if (document.activeElement) { document.activeElement.blur(); }
+    }
+</script>
+
+
+    
+        
+         
+   
+ 
+     
+
 
   
 
