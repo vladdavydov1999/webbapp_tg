@@ -1,11 +1,12 @@
 import telebot
 import time
-import requests  
+import requests  # Библиотека для отправки запросов к API
 
 TOKEN = '8806371020:AAEWYJuSncBvdEGksANUfZEyx1sUdp6QR3c'
 bot = telebot.TeleBot(TOKEN)
 
 last_message_time = {}
+
 
 def is_spam(chat_id):
     current_time = time.time()
@@ -18,38 +19,63 @@ def is_spam(chat_id):
         return True
     return False
 
+
 # Функция получения реальных курсов валют через бесплатное API
 def get_forex_rates():
+    # --- Попытка №1: Основное API ---
     try:
-        # Используем открытое API биржевых курсов к доллару США (USD)
         url = "https://er-api.com"
-        response = requests.get(url, timeout=5)
+        response = requests.get(url, timeout=4)
         data = response.json()
-        
-        if data["result"] == "success":
+
+        if data.get("result") == "success":
             rates = data["rates"]
-            # Считаем обратные курсы доллара к другим валютам
             usd_rub = rates.get("RUB", 0)
             usd_eur = rates.get("EUR", 0)
             usd_cny = rates.get("CNY", 0)
-            
-            # Считаем кросс-курсы (например, сколько рублей в одном евро)
+
             eur_rub = usd_rub / usd_eur if usd_eur else 0
             cny_rub = usd_rub / usd_cny if usd_cny else 0
 
-            text = (
-                "💵 **Официальные мировые валюты:**\n\n"
+            return (
+                "💵 **Курсы валют (Источник: FX API):**\n\n"
                 f"🇺🇸 1 USD = {usd_rub:.2f} RUB\n"
                 f"🇪🇺 1 EUR = {eur_rub:.2f} RUB\n"
                 f"🇨🇳 1 CNY = {cny_rub:.2f} RUB\n\n"
-                "📊 *Данные обновляются автоматически в режиме реального времени.*"
+                "📊 *Обновление в реальном времени.*"
             )
-            return text
-        else:
-            return "⚠️ Не удалось получить свежие данные от биржи. Попробуйте позже."
     except Exception as e:
-        print(f"Ошибка API: {e}")
-        return "❌ Ошибка при запросе котировок. Проверьте подключение к интернету."
+        print(f"Основное API недоступно ({e}), переключаюсь на резерв...")
+
+    # --- Попытка №2: Резервное API (Frankfurter / ЕЦБ) ---
+    try:
+        # Запрашиваем курсы относительно Евро (EUR), так как это база для ЕЦБ
+        url = "https://frankfurter.dev"
+        response = requests.get(url, timeout=4)
+        data = response.json()
+
+        if "rates" in data:
+            rates = data["rates"]
+            eur_usd = rates.get("USD", 0)
+            eur_rub = rates.get("RUB", 0)
+            eur_cny = rates.get("CNY", 0)
+
+            # Пересчитываем всё к рублю и доллару
+            usd_rub = eur_rub / eur_usd if eur_usd else 0
+            cny_rub = eur_rub / eur_cny if eur_cny else 0
+
+            return (
+                "💵 **Курсы валют (Резервный источник: ЕЦБ):**\n\n"
+                f"🇺🇸 1 USD = {usd_rub:.2f} RUB\n"
+                f"🇪🇺 1 EUR = {eur_rub:.2f} RUB\n"
+                f"🇨🇳 1 CNY = {cny_rub:.2f} RUB\n\n"
+                "📊 *Данные успешно получены через резервный канал.*"
+            )
+    except Exception as e:
+        print(f"Резервное API тоже выдало ошибку: {e}")
+
+    return "❌ Ошибка при запросе котировок. Проверьте соединение с интернетом на сервере."
+
 
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
@@ -66,19 +92,21 @@ def send_welcome(message):
     )
     bot.send_message(message.chat.id, welcome_text, parse_mode="HTML")
 
+
 # Новая профессиональная команда для отслеживания валютных рынков
 @bot.message_handler(commands=['rates'])
 def show_rates(message):
     if is_spam(message.chat.id): return
     # Отправляем сообщение о загрузке, так как запрос к бирже может занять 1-2 секунды
     waiting_msg = bot.send_message(message.chat.id, "🔄 Запрашиваю свежие котировки с биржи...")
-    
+
     # Получаем текст с курсами
     rates_text = get_forex_rates()
-    
+
     # Удаляем сообщение о загрузке и присылаем финальный результат
     bot.delete_message(message.chat.id, waiting_msg.message_id)
     bot.send_message(message.chat.id, rates_text, parse_mode="Markdown")
+
 
 @bot.message_handler(commands=['snowball'])
 def info_snowball(message):
@@ -86,11 +114,13 @@ def info_snowball(message):
     text = "📉 **Метод 'Снежного кома'**: отсортируй долги от меньшего к большему и направляй ускоритель на первый."
     bot.send_message(message.chat.id, text, parse_mode="Markdown")
 
+
 @bot.message_handler(commands=['compound'])
 def info_compound(message):
     if is_spam(message.chat.id): return
     text = "📈 **Сложный процент**: начисление процентов на проценты. Время — твой главный союзник."
     bot.send_message(message.chat.id, text, parse_mode="Markdown")
+
 
 @bot.message_handler(commands=['safety_net'])
 def info_safety(message):
@@ -98,19 +128,16 @@ def info_safety(message):
     text = "💰 **Подушка безопасности**: сумма обязательных расходов за 3-6 месяцев, хранящаяся на накопительном счете."
     bot.send_message(message.chat.id, text, parse_mode="Markdown")
 
+
 @bot.message_handler(func=lambda message: True)
 def echo_all(message):
     if is_spam(message.chat.id): return
-    bot.send_message(message.chat.id, "🤖 Я понимаю только команды из меню. Нажми кнопку <b>«Open»</b> для калькуляторов!", parse_mode="HTML")
+    bot.send_message(message.chat.id,
+                     "🤖 Я понимаю только команды из меню. Нажми кнопку <b>«Open»</b> для калькуляторов!",
+                     parse_mode="HTML")
+
 
 if __name__ == '__main__':
     print("Профессиональная версия бота с модулем валют запущена...")
     bot.infinity_polling()
-
- 
-
-
-
-
-
 
