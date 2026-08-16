@@ -1,8 +1,8 @@
 import telebot
 import time
-import requests  # Библиотека для отправки запросов к API
+import requests
 
-TOKEN = '8806371020:AAEWYJuSncBvdEGksANUfZEyx1sUdp6QR3c'
+TOKEN = 'TOKEN'
 bot = telebot.TeleBot(TOKEN)
 
 last_message_time = {}
@@ -20,61 +20,47 @@ def is_spam(chat_id):
     return False
 
 
-# Функция получения реальных курсов валют через бесплатное API
+# Валютный модуль на базе официального API Центробанка РФ
 def get_forex_rates():
-    # --- Попытка №1: Основное API ---
     try:
-        url = "https://er-api.com"
-        response = requests.get(url, timeout=4)
+        # Используем стабильное JSON-API курсов валют ЦБ РФ
+        url = "https://www.cbr-xml-daily.ru/daily_json.js"
+        response = requests.get(url, timeout=5)
         data = response.json()
 
-        if data.get("result") == "success":
-            rates = data["rates"]
-            usd_rub = rates.get("RUB", 0)
-            usd_eur = rates.get("EUR", 0)
-            usd_cny = rates.get("CNY", 0)
+        if "Valute" in data:
+            valute = data["Valute"]
 
-            eur_rub = usd_rub / usd_eur if usd_eur else 0
-            cny_rub = usd_rub / usd_cny if usd_cny else 0
+            # Извлекаем курсы к российскому рублю (RUB)
+            usd_rub = valute["USD"]["Value"]
+            eur_rub = valute["EUR"]["Value"]
+            cny_rub = valute["CNY"]["Value"] / valute["CNY"]["Nominal"]  # с учетом номинала (10 юаней)
+            byn_rub = valute["BYN"]["Value"]  # курс 1 белорусского рубля к российскому
 
-            return (
-                "💵 **Курсы валют (Источник: FX API):**\n\n"
+            # Рассчитываем кросс-курсы к белорусскому рублю (BYN)
+            usd_byn = usd_rub / byn_rub if byn_rub else 0
+            eur_byn = eur_rub / byn_rub if byn_rub else 0
+            cny_byn = (cny_rub * 10) / byn_rub if byn_rub else 0
+
+            text = (
+                "💵 **Официальные курсы валют Центробанка:**\n\n"
+                "📊 **К российскому рублю (RUB):**\n"
                 f"🇺🇸 1 USD = {usd_rub:.2f} RUB\n"
                 f"🇪🇺 1 EUR = {eur_rub:.2f} RUB\n"
-                f"🇨🇳 1 CNY = {cny_rub:.2f} RUB\n\n"
-                "📊 *Обновление в реальном времени.*"
+                f"🇨🇳 10 CNY = {cny_rub * 10:.2f} RUB\n\n"
+                "🇧🇾 **К белорусскому рублю (BYN):**\n"
+                f"🇺🇸 1 USD = {usd_byn:.4f} BYN\n"
+                f"🇪🇺 1 EUR = {eur_byn:.4f} BYN\n"
+                f"🇨🇳 10 CNY = {cny_byn:.4f} BYN\n\n"
+                "🏛 _Источник котировок: Банк России_"
             )
+            return text
+        else:
+            return "⚠️ Не удалось разобрать структуру данных Банка России."
+
     except Exception as e:
-        print(f"Основное API недоступно ({e}), переключаюсь на резерв...")
-
-    # --- Попытка №2: Резервное API (Frankfurter / ЕЦБ) ---
-    try:
-        # Запрашиваем курсы относительно Евро (EUR), так как это база для ЕЦБ
-        url = "https://frankfurter.dev"
-        response = requests.get(url, timeout=4)
-        data = response.json()
-
-        if "rates" in data:
-            rates = data["rates"]
-            eur_usd = rates.get("USD", 0)
-            eur_rub = rates.get("RUB", 0)
-            eur_cny = rates.get("CNY", 0)
-
-            # Пересчитываем всё к рублю и доллару
-            usd_rub = eur_rub / eur_usd if eur_usd else 0
-            cny_rub = eur_rub / eur_cny if eur_cny else 0
-
-            return (
-                "💵 **Курсы валют (Резервный источник: ЕЦБ):**\n\n"
-                f"🇺🇸 1 USD = {usd_rub:.2f} RUB\n"
-                f"🇪🇺 1 EUR = {eur_rub:.2f} RUB\n"
-                f"🇨🇳 1 CNY = {cny_rub:.2f} RUB\n\n"
-                "📊 *Данные успешно получены через резервный канал.*"
-            )
-    except Exception as e:
-        print(f"Резервное API тоже выдало ошибку: {e}")
-
-    return "❌ Ошибка при запросе котировок. Проверьте соединение с интернетом на сервере."
+        print(f"Ошибка API ЦБ РФ: {e}")
+        return "❌ Ошибка при запросе котировок. Не удалось подключиться к серверу ЦБ."
 
 
 @bot.message_handler(commands=['start'])
@@ -93,17 +79,11 @@ def send_welcome(message):
     bot.send_message(message.chat.id, welcome_text, parse_mode="HTML")
 
 
-# Новая профессиональная команда для отслеживания валютных рынков
 @bot.message_handler(commands=['rates'])
 def show_rates(message):
     if is_spam(message.chat.id): return
-    # Отправляем сообщение о загрузке, так как запрос к бирже может занять 1-2 секунды
-    waiting_msg = bot.send_message(message.chat.id, "🔄 Запрашиваю свежие котировки с биржи...")
-
-    # Получаем текст с курсами
+    waiting_msg = bot.send_message(message.chat.id, "🔄 Запрашиваю официальные данные у Банка России...")
     rates_text = get_forex_rates()
-
-    # Удаляем сообщение о загрузке и присылаем финальный результат
     bot.delete_message(message.chat.id, waiting_msg.message_id)
     bot.send_message(message.chat.id, rates_text, parse_mode="Markdown")
 
@@ -138,6 +118,8 @@ def echo_all(message):
 
 
 if __name__ == '__main__':
-    print("Профессиональная версия бота с модулем валют запущена...")
+    print("Локализованная Pro-версия на API ЦБ РФ запущена...")
     bot.infinity_polling()
 
+
+    
