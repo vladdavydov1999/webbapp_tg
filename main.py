@@ -2,11 +2,10 @@ import telebot
 import time
 import requests
 
-TOKEN = 'TOKEN'
+TOKEN = 'ТВОЙ_ТОКЕН_ИЗ_BOTFATHER'
 bot = telebot.TeleBot(TOKEN)
 
 last_message_time = {}
-
 
 def is_spam(chat_id):
     current_time = time.time()
@@ -19,30 +18,24 @@ def is_spam(chat_id):
         return True
     return False
 
-
-# Валютный модуль на базе официального API Центробанка РФ
+# Модуль валют (ЦБ РФ)
 def get_forex_rates():
     try:
-        # Используем стабильное JSON-API курсов валют ЦБ РФ
-        url = "https://www.cbr-xml-daily.ru/daily_json.js"
+        url = "https://cbr-xml-daily.ru"
         response = requests.get(url, timeout=5)
         data = response.json()
-
         if "Valute" in data:
             valute = data["Valute"]
-
-            # Извлекаем курсы к российскому рублю (RUB)
             usd_rub = valute["USD"]["Value"]
             eur_rub = valute["EUR"]["Value"]
-            cny_rub = valute["CNY"]["Value"] / valute["CNY"]["Nominal"]  # с учетом номинала (10 юаней)
-            byn_rub = valute["BYN"]["Value"]  # курс 1 белорусского рубля к российскому
-
-            # Рассчитываем кросс-курсы к белорусскому рублю (BYN)
+            cny_rub = valute["CNY"]["Value"] / valute["CNY"]["Nominal"]
+            byn_rub = valute["BYN"]["Value"]
+            
             usd_byn = usd_rub / byn_rub if byn_rub else 0
             eur_byn = eur_rub / byn_rub if byn_rub else 0
             cny_byn = (cny_rub * 10) / byn_rub if byn_rub else 0
-
-            text = (
+            
+            return (
                 "💵 **Официальные курсы валют Центробанка:**\n\n"
                 "📊 **К российскому рублю (RUB):**\n"
                 f"🇺🇸 1 USD = {usd_rub:.2f} RUB\n"
@@ -54,14 +47,50 @@ def get_forex_rates():
                 f"🇨🇳 10 CNY = {cny_byn:.4f} BYN\n\n"
                 "🏛 _Источник котировок: Банк России_"
             )
-            return text
-        else:
-            return "⚠️ Не удалось разобрать структуру данных Банка России."
-
     except Exception as e:
-        print(f"Ошибка API ЦБ РФ: {e}")
-        return "❌ Ошибка при запросе котировок. Не удалось подключиться к серверу ЦБ."
+        return "❌ Ошибка при запросе курсов валют."
 
+# НОВЫЙ МОДУЛЬ: Получение цен акций с Московской Биржи (MOEX)
+def get_moex_stocks():
+    try:
+        # Запрашиваем данные по рынку акций (акции Т+, режим главного окна)
+        url = "https://moex.com"
+        response = requests.get(url, timeout=5)
+        data = response.json()
+        
+        # Список интересующих нас топ-компаний (тикеры на бирже)
+        target_tickers = {
+            "SBER": "🍏 Сбербанк",
+            "GAZP": "🔥 Газпром",
+            "LKOH": "⛽️ Лукойл",
+            "YNDX": "📱 Яндекс",
+            "NVTK": "❄️ Новатэк"
+        }
+        
+        rows = data["securities"]["data"]
+        result_text = "📈 **Котировки акций (Московская Биржа):**\n\n"
+        
+        found_any = False
+        for row in rows:
+            secid = row[0]       # Тикер (например, SBER)
+            name = row[1]        # Краткое имя
+            price = row[2]       # Цена закрытия/последняя цена (в рублях)
+            
+            if secid in target_tickers:
+                found_any = True
+                # Берем наше красивое название из словаря
+                beautiful_name = target_tickers[secid]
+                result_text += f"{beautiful_name} ({secid}) = **{price:.2f} RUB**\n"
+                
+        if found_any:
+            result_text += "\n🔔 _Цены указаны за 1 акцию на момент закрытия или текущих торгов MOEX._"
+            return result_text
+        else:
+            return "⚠️ Данные по акциям получены, но топ-тикеры не найдены."
+            
+    except Exception as e:
+        print(f"Ошибка API MOEX: {e}")
+        return "❌ Не удалось подключиться к серверам Московской Биржи. Проверьте сеть."
 
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
@@ -72,12 +101,12 @@ def send_welcome(message):
         "Нажми кнопку <b>«Open»</b> в углу экрана, чтобы открыть визуальный калькулятор!\n\n"
         "📖 <b>Команды финансовой аналитики:</b>\n"
         "/rates — Актуальные курсы мировых валют\n"
+        "/stocks — Котировки акций (Топ компаний)\n"
         "/snowball — Стратегия закрытия долгов\n"
         "/compound — Магия сложного процента\n"
         "/safety_net — Расчет финансовой подушки"
     )
     bot.send_message(message.chat.id, welcome_text, parse_mode="HTML")
-
 
 @bot.message_handler(commands=['rates'])
 def show_rates(message):
@@ -87,6 +116,14 @@ def show_rates(message):
     bot.delete_message(message.chat.id, waiting_msg.message_id)
     bot.send_message(message.chat.id, rates_text, parse_mode="Markdown")
 
+# НОВАЯ КОМАНДА: Вывод акций
+@bot.message_handler(commands=['stocks'])
+def show_stocks(message):
+    if is_spam(message.chat.id): return
+    waiting_msg = bot.send_message(message.chat.id, "🔄 Подключаюсь к торговой системе MOEX...")
+    stocks_text = get_moex_stocks()
+    bot.delete_message(message.chat.id, waiting_msg.message_id)
+    bot.send_message(message.chat.id, stocks_text, parse_mode="Markdown")
 
 @bot.message_handler(commands=['snowball'])
 def info_snowball(message):
@@ -94,13 +131,11 @@ def info_snowball(message):
     text = "📉 **Метод 'Снежного кома'**: отсортируй долги от меньшего к большему и направляй ускоритель на первый."
     bot.send_message(message.chat.id, text, parse_mode="Markdown")
 
-
 @bot.message_handler(commands=['compound'])
 def info_compound(message):
     if is_spam(message.chat.id): return
     text = "📈 **Сложный процент**: начисление процентов на проценты. Время — твой главный союзник."
     bot.send_message(message.chat.id, text, parse_mode="Markdown")
-
 
 @bot.message_handler(commands=['safety_net'])
 def info_safety(message):
@@ -108,18 +143,16 @@ def info_safety(message):
     text = "💰 **Подушка безопасности**: сумма обязательных расходов за 3-6 месяцев, хранящаяся на накопительном счете."
     bot.send_message(message.chat.id, text, parse_mode="Markdown")
 
-
 @bot.message_handler(func=lambda message: True)
 def echo_all(message):
     if is_spam(message.chat.id): return
-    bot.send_message(message.chat.id,
-                     "🤖 Я понимаю только команды из меню. Нажми кнопку <b>«Open»</b> для калькуляторов!",
-                     parse_mode="HTML")
-
+    bot.send_message(message.chat.id, "🤖 Я понимаю только команды из меню. Нажми кнопку <b>«Open»</b> для калькуляторов!", parse_mode="HTML")
 
 if __name__ == '__main__':
-    print("Локализованная Pro-версия на API ЦБ РФ запущена...")
+    print("Инвестиционная Pro-версия с модулем акций запущена...")
     bot.infinity_polling()
 
+   
 
-    
+
+
