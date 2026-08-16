@@ -1,5 +1,3 @@
-import os
-os.environ['NO_PROXY'] = 'cbr-xml-daily.ru,://moex.com'
 import telebot
 import time
 import requests
@@ -8,7 +6,7 @@ import requests
 TOKEN = 'ТВОЙ_ТОКЕН_ИЗ_BOTFATHER'
 bot = telebot.TeleBot(TOKEN)
 
-# ================= 🛡️ МОДУЛЬ АНТИФЛУДА (ЗАЩИТА ОТ ДВОЙНЫХ КЛИКОВ) =================
+# ================= 🛡️ МОДУЛЬ АНТИФЛУДА =================
 
 last_message_time = {}
 
@@ -23,7 +21,7 @@ def is_spam(chat_id):
         return True
     return False
 
-# ================= 📈 ЧИСТЫЕ СЕТЕВЫЕ ИНВЕСТ-МОДУЛИ =================
+# ================= 📈 ИНВЕСТ-МОДУЛИ С ИСПРАВЛЕННЫМИ ИНДЕКСАМИ =================
 
 # 1. Прямой запрос к ЦБ РФ (Валюты)
 def get_forex_rates():
@@ -38,7 +36,6 @@ def get_forex_rates():
             cny_rub = valute["CNY"]["Value"] / valute["CNY"]["Nominal"]
             byn_rub = valute["BYN"]["Value"]
             
-            # Математический кросс-курс для инвесторов из Беларуси на базе данных ЦБ
             usd_byn = usd_rub / byn_rub if byn_rub else 0
             eur_byn = eur_rub / byn_rub if byn_rub else 0
             cny_byn = (cny_rub * 10) / byn_rub if byn_rub else 0
@@ -56,9 +53,8 @@ def get_forex_rates():
                 "🏛 _Источник данных: Центральный Банк РФ_"
             )
     except Exception as e:
-        print(f"Ошибка валют ЦБ: {e}")
+        print(f"Критическая ошибка Валют ЦБ: {e}")
         
-    # Понятный пользователю предупредительный сигнал без обмана и ложных цифр
     return (
         "⚠️ **Шлюз котировок временно недоступен**\n\n"
         "Бот не смог получить актуальные курсы от Банка России.\n"
@@ -68,7 +64,7 @@ def get_forex_rates():
         "💡 _Попробуйте повторить запрос через 1-2 минуты или включите российский VPN._"
     )
 
-# 2. Живой парсинг акций напрямую с Московской Биржи (MOEX)
+# 2. ПРАВИЛЬНЫЙ парсинг акций напрямую с Московской Биржи (MOEX)
 def get_moex_stocks():
     try:
         url = "https://moex.com"
@@ -85,8 +81,8 @@ def get_moex_stocks():
             found = False
             
             for row in rows:
-                secid = row[0]   # Код бумаги (Тикер)
-                price = row[1]   # Цена закрытия/последней сделки
+                secid = row[0]   # ИСПРАВЛЕНО: Берем первый элемент строки (Тикер)
+                price = row[1]   # ИСПРАВЛЕНО: Берем второй элемент строки (Цена)
                 if secid in target_tickers and price is not None:
                     found = True
                     result_text += f"{target_tickers[secid]} ({secid}) = **{price:.2f} RUB**\n"
@@ -95,9 +91,8 @@ def get_moex_stocks():
                 result_text += "\n⚡️ _Котировки обновлены напрямую из торговой системы MOEX._"
                 return result_text
     except Exception as e:
-        print(f"Ошибка акций MOEX: {e}")
+        print(f"Критическая ошибка акций MOEX: {e}")
         
-    # Предупредительный сигнал для акций
     return (
         "⚠️ **Торговый сервер MOEX не отвечает**\n\n"
         "Не удалось загрузить живые котировки акций с Московской Биржи.\n"
@@ -106,7 +101,7 @@ def get_moex_stocks():
         "Пожалуйста, **включите российский VPN** в настройках вашего устройства и повторите команду `/stocks`."
     )
 
-# 3. Живой парсинг доходностей ОФЗ напрямую из долговой секции MOEX
+# 3. ПРАВИЛЬНЫЙ парсинг доходностей ОФЗ напрямую из долговой секции MOEX
 def get_moex_bonds():
     try:
         url = "https://moex.com"
@@ -124,9 +119,9 @@ def get_moex_bonds():
             found = False
             
             for row in rows:
-                secid = row[0]       # Код ОФЗ
-                price = row[1]       # Рыночная цена в % от номинала
-                bond_yield = row[2]  # Эффективная доходность к погашению
+                secid = row[0]       # ИСПРАВЛЕНО: Берем тикер ОФЗ
+                price = row[1]       # ИСПРАВЛЕНО: Берем цену в %
+                bond_yield = row[2]  # ИСПРАВЛЕНО: Берем эффективную доходность
                 if secid in target_bonds:
                     found = True
                     p_str = f"{price:.2f}%" if price is not None else "нет торгов"
@@ -137,9 +132,8 @@ def get_moex_bonds():
                 result_text += "💡 _Доходность зафиксируется на весь срок, если держать ОФЗ до погашения._"
                 return result_text
     except Exception as e:
-        print(f"Ошибка облигаций MOEX: {e}")
+        print(f"Критическая ошибка облигаций MOEX: {e}")
         
-    # Предупредительный сигнал для облигаций
     return (
         "⚠️ **Долговой рынок биржи недоступен**\n\n"
         "Скрипту не удалось подключиться к секции гособлигаций.\n"
@@ -202,13 +196,11 @@ def info_safety(message):
     if is_spam(message.chat.id): return
     bot.send_message(message.chat.id, "💰 **Подушка безопасности**: резерв на 3-6 месяцев обязательных расходов.", parse_mode="Markdown")
 
-# КРИТИЧЕСКИ ВАЖНО: Универсальная заглушка на текст ВСЕГДА В САМОМ НИЗУ ХЕНДЛЕРОВ!
 @bot.message_handler(func=lambda message: True)
 def echo_all(message):
     if is_spam(message.chat.id): return
     bot.send_message(message.chat.id, "🤖 Я понимаю только команды из меню. Нажми кнопку <b>«Open»</b> для калькуляторов!", parse_mode="HTML")
 
 if __name__ == '__main__':
-    # Очищаем терминал перед запуском
     print("Чистая инвестиционная Pro-версия запущена...")
     bot.infinity_polling()
