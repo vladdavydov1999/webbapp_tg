@@ -3,71 +3,109 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quantum Capital Architect</title>
+    <title>Финансовый Ассистент</title>
+    <!-- Подключаем официальный скрипт Telegram -->
     <script src="https://telegram.org"></script>
     <style>
-        body { font-family: -apple-system, sans-serif; background-color: #0F0F11; color: #E4E4E7; margin: 0; padding: 16px; }
-        .card { background: #18181B; border: 1px solid #27272A; border-radius: 12px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.6); }
-        h3 { margin-top: 0; font-size: 18px; color: #FAFAFA; text-align: center; letter-spacing: 1px; }
-        label { display: block; font-size: 12px; color: #A1A1AA; margin-bottom: 6px; text-transform: uppercase; }
-        select, input { width: 100%; padding: 10px; background: #27272A; color: #FFF; border: 1px solid #3F3F46; border-radius: 6px; margin-bottom: 16px; box-sizing: border-box; }
-        .btn { width: 100%; padding: 14px; background: #FFFFFF; color: #09090B; border: none; border-radius: 6px; font-weight: bold; font-size: 15px; cursor: pointer; }
-        .btn:hover { background: #E4E4E7; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--tg-theme-bg-color, #fff);
+            color: var(--tg-theme-text-color, #000);
+            margin: 0;
+            padding: 16px;
+        }
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        h2 { text-align: center; color: #2481cc; }
+        .card {
+            background: var(--tg-theme-secondary-bg-color, #f0f0f0);
+            padding: 16px;
+            border-radius: 12px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        label { display: block; margin: 10px 0 5px; font-weight: bold; }
+        input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            box-sizing: border-box;
+            background: var(--tg-theme-bg-color, #fff);
+            color: var(--tg-theme-text-color, #000);
+        }
+        button {
+            width: 100%;
+            background-color: #2481cc;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+        button:hover { background-color: #1c6aab; }
+        .result {
+            margin-top: 15px;
+            padding: 10px;
+            background: #e1f5fe;
+            color: #0288d1;
+            border-radius: 8px;
+            font-weight: bold;
+            display: none;
+        }
     </style>
 </head>
 <body>
+
+<div class="container">
+    <h2>📊 Фин-Приложение</h2>
+
+    <!-- Блок Сложного процента -->
     <div class="card">
-        <h3>QUANTUM ARCHITECT v4.5</h3>
+        <h3>📈 Сложный процент</h3>
+        <label>Начальная сумма (руб):</label>
+        <input type="number" id="principal" value="50000">
 
-        <label>1. Выберите вектор архитектуры</label>
-        <select id="goal_type" onchange="toggleInputs()">
-            <option value="save">📈 Накопление капитала</option>
-            <option value="debt">📉 Ликвидация токсичных долгов</option>
-            <option value="invest">🚀 Агрессивное инвестирование</option>
-        </select>
+        <label>Ежемесячный взнос (руб):</label>
+        <input type="number" id="monthly" value="5000">
 
-        <label id="lbl_initial">Стартовый щит ($)</label>
-        <input type="number" id="initial" value="10000">
+        <label>Годовой процент (%):</label>
+        <input type="number" id="rate" value="16">
 
-        <label id="lbl_monthly">Ежемесячный шаг ($)</label>
-        <input type="number" id="monthly" value="500">
+        <label>Срок (лет):</label>
+        <input type="number" id="years" value="5">
 
-        <label id="lbl_target">Целевой ориентир ($ / % ставки долга)</label>
-        <input type="number" id="target" value="50000">
-
-        <button class="btn" onclick="executeProtonPlan()">Запустить компиляцию</button>
+        <button onclick="calcCompound()">Рассчитать капитал</button>
+        <div id="compoundResult" class="result"></div>
     </div>
+</div>
 
-    <script>
-        let tg = window.Telegram.WebApp;
-        tg.expand();
+<script>
+    // Инициализация Telegram WebApp
+    const tg = window.Telegram.WebApp;
+    tg.ready(); // Сообщаем TG, что приложение готово
+    tg.expand(); // Разворачиваем на максимум
 
-        function toggleInputs() {
-            let goal = document.getElementById('goal_type').value;
-            if (goal === 'debt') {
-                document.getElementById('lbl_initial').innerText = "Текущий объем долга ($)";
-                document.getElementById('lbl_monthly').innerText = "Размер платежа в месяц ($)";
-                document.getElementById('lbl_target').innerText = "Ставка кредита / карты (% годовых)";
-                document.getElementById('initial').value = 5000;
-                document.getElementById('monthly').value = 400;
-                document.getElementById('target').value = 25;
-            } else {
-                document.getElementById('lbl_initial').innerText = "Стартовый щит ($)";
-                document.getElementById('lbl_monthly').innerText = "Ежемесячный шаг ($)";
-                document.getElementById('lbl_target').innerText = "Целевой ориентир ($)";
-            }
+    function calcCompound() {
+        const p = parseFloat(document.getElementById('principal').value);
+        const m = parseFloat(document.getElementById('monthly').value);
+        const r = parseFloat(document.getElementById('rate').value) / 100 / 12;
+        const years = parseInt(document.getElementById('years').value);
+        const months = years * 12;
+
+        let total = p;
+        for (let i = 0; i < months; i++) {
+            total = total * (1 + r) + m;
         }
 
-        function executeProtonPlan() {
-            let packet = {
-                goal_type: document.getElementById('goal_type').value,
-                initial: parseInt(document.getElementById('initial').value),
-                monthly: parseInt(document.getElementById('monthly').value),
-                target: parseInt(document.getElementById('target').value)
-            };
-            tg.sendData(JSON.stringify(packet));
-            tg.close();
-        }
-    </script>
+        const resDiv = document.getElementById('compoundResult');
+        resDiv.style.display = 'block';
+        resDiv.innerHTML = `Итоговый капитал: ${total.toLocaleString('ru-RU', {maximumFractionDigits: 2})} руб.`;
+    }
+</script>
 </body>
 </html>
