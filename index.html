@@ -16,11 +16,12 @@
         h2 { text-align: center; color: #2481cc; margin-bottom: 10px; }
         
         /* Вкладки (Табы) */
-        .tabs { display: flex; gap: 8px; margin-bottom: 16px; }
+        .tabs { display: flex; gap: 4px; margin-bottom: 16px; }
         .tab-btn {
-            flex: 1; padding: 10px; border: none; border-radius: 8px;
+            flex: 1; padding: 10px 4px; border: none; border-radius: 8px;
             background: var(--tg-theme-secondary-bg-color, #f0f0f0);
             color: var(--tg-theme-text-color, #000); cursor: pointer; font-weight: bold;
+            font-size: 13px;
         }
         .tab-btn.active { background-color: #2481cc; color: white; }
         .tab-content { display: none; }
@@ -31,10 +32,10 @@
             padding: 16px; border-radius: 12px; margin-bottom: 16px;
         }
         label { display: block; margin: 10px 0 5px; font-weight: bold; font-size: 14px; }
-        input {
+        input, select {
             width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 8px;
             box-sizing: border-box; background: var(--tg-theme-bg-color, #fff);
-            color: var(--tg-theme-text-color, #000);
+            color: var(--tg-theme-text-color, #000); font-size: 14px;
         }
         button {
             width: 100%; background-color: #2481cc; color: white; border: none;
@@ -56,10 +57,11 @@
 <div class="container">
     <h2>📊 Фин-Приложение</h2>
 
-    <!-- Кнопки переключения -->
+    <!-- Кнопки переключения (Теперь их три!) -->
     <div class="tabs">
         <button class="tab-btn active" onclick="switchTab('tab-compound')">📈 Процент</button>
         <button class="tab-btn" onclick="switchTab('tab-debts')">📉 Долги</button>
+        <button class="tab-btn" onclick="switchTab('tab-safety')">💰 Подушка</button>
     </div>
 
     <!-- ВКЛАДКА 1: Сложный процент -->
@@ -103,6 +105,24 @@
             <div id="snowballResult" class="result"></div>
         </div>
     </div>
+
+    <!-- ВКЛАДКА 3: Финансовая подушка -->
+    <div id="tab-safety" class="tab-content">
+        <div class="card">
+            <label>Твои расходы в месяц (руб):</label>
+            <input type="number" id="expenses" value="40000" placeholder="Еда, аренда, платежи...">
+            
+            <label>Запас безопасности (срок):</label>
+            <select id="safetyPeriod">
+                <option value="3">3 месяца (Базовый)</option>
+                <option value="6" selected>6 месяцев (Стабильный)</option>
+                <option value="12">12 месяцев (Максимальный)</option>
+            </select>
+
+            <button onclick="calcSafetyNet()">💰 Рассчитать резерв</button>
+            <div id="safetyResult" class="result"></div>
+        </div>
+    </div>
 </div>
 
 <script>
@@ -140,7 +160,7 @@
                            `📈 Из них проценты: ${(total - invested).toLocaleString('ru-RU', {maximumFractionDigits: 2})} руб.`;
     }
 
-    // Добавление долга в массив
+    // Добавление долга
     function addDebt() {
         const name = document.getElementById('debtName').value.trim();
         const balance = parseFloat(document.getElementById('debtBalance').value);
@@ -152,12 +172,10 @@
 
         globalDebts.push({ name, balance, min_payment: min });
 
-        // Обновляем визуальный список
         const listDiv = document.getElementById('debtsList');
         document.getElementById('addedDebtsBlock').style.display = 'block';
         listDiv.innerHTML += `<div class="debt-item">📌 <b>${name}</b>: ${balance.toLocaleString()} руб. (мин: ${min} руб.)</div>`;
 
-        // Очищаем поля ввода долга
         document.getElementById('debtName').value = '';
         document.getElementById('debtBalance').value = '';
         document.getElementById('debtMin').value = '';
@@ -166,11 +184,8 @@
     // Расчет Снежного кома
     function calcSnowball() {
         if (globalDebts.length === 0) { alert("Сначала добавьте хотя бы один долг!"); return; }
-        
         const extra = parseFloat(document.getElementById('debtExtra').value) || 0;
         let calcDebts = globalDebts.map(d => ({ ...d }));
-        
-        // Сортируем от меньшего к большему балансу
         calcDebts.sort((a, b) => a.balance - b.balance);
 
         let months = 0;
@@ -178,7 +193,6 @@
             months++;
             let currentExtraPool = extra;
 
-            // Минимальные платежи
             for (let d of calcDebts) {
                 if (d.balance > 0) {
                     let actualMin = Math.min(d.min_payment, d.balance);
@@ -186,7 +200,6 @@
                 }
             }
 
-            // Экстра-пул на самый маленький долг
             for (let d of calcDebts) {
                 if (d.balance > 0) {
                     let payOff = Math.min(currentExtraPool, d.balance);
@@ -196,13 +209,11 @@
                 }
             }
 
-            // Фиксируем месяц закрытия
             for (let d of calcDebts) {
                 if (d.balance <= 0 && !d.closedIn) d.closedIn = months;
             }
         }
 
-        // Вывод результатов
         const resDiv = document.getElementById('snowballResult');
         resDiv.style.display = 'block';
         let html = `<b>🗓 План погашения долгов:</b><br><br>`;
@@ -212,6 +223,19 @@
         html += `<br>🎉 <b>Полная свобода наступит через: ${months} мес.</b>`;
         resDiv.innerHTML = html;
     }
-</script>
-</body>
-</html>
+
+    // Расчет Финансовой Подушки
+    function calcSafetyNet() {
+        const expenses = parseFloat(document.getElementById('expenses').value) || 0;
+        const period = parseInt(document.getElementById('safetyPeriod').value);
+        
+        const totalRequired = expenses * period;
+
+        const resDiv = document.getElementById('safetyResult');
+        resDiv.style.display = 'block';
+
+              
+      
+
+   
+        
