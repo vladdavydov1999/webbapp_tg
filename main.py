@@ -1,3 +1,5 @@
+import os
+os.environ['NO_PROXY'] = 'cbr-xml-daily.ru,://moex.com'
 import telebot
 import time
 import requests
