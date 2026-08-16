@@ -2,8 +2,11 @@ import telebot
 import time
 import requests
 
+# Инициализируем бота
 TOKEN = 'ТВОЙ_ТОКЕН_ИЗ_BOTFATHER'
 bot = telebot.TeleBot(TOKEN)
+
+# ================= 🛡️ МОДУЛЬ АНТИФЛУДА (ЗАЩИТА ОТ ДВОЙНЫХ КЛИКОВ) =================
 
 last_message_time = {}
 
@@ -18,24 +21,22 @@ def is_spam(chat_id):
         return True
     return False
 
-# ================= ФИНАНСОВЫЕ МОДУЛИ API =================
+# ================= 📈 ЧИСТЫЕ СЕТЕВЫЕ ИНВЕСТ-МОДУЛИ =================
 
-# 1. Честные Валюты ЦБ РФ
+# 1. Прямой запрос к ЦБ РФ (Валюты)
 def get_forex_rates():
     try:
-        url = "https://www.cbr-xml-daily.ru/daily_json.js"
+        url = "https://cbr-xml-daily.ru"
         response = requests.get(url, timeout=5)
-        if response.status_code != 200:
-            return "⚠️ Сервер Банка России временно недоступен. Пожалуйста, попробуйте позже."
+        if response.status_code == 200:
+            valute = response.json()["Valute"]
             
-        data = response.json()
-        if "Valute" in data:
-            valute = data["Valute"]
             usd_rub = valute["USD"]["Value"]
             eur_rub = valute["EUR"]["Value"]
             cny_rub = valute["CNY"]["Value"] / valute["CNY"]["Nominal"]
             byn_rub = valute["BYN"]["Value"]
             
+            # Математический кросс-курс для инвесторов из Беларуси на базе данных ЦБ
             usd_byn = usd_rub / byn_rub if byn_rub else 0
             eur_byn = eur_rub / byn_rub if byn_rub else 0
             cny_byn = (cny_rub * 10) / byn_rub if byn_rub else 0
@@ -53,75 +54,98 @@ def get_forex_rates():
                 "🏛 _Источник данных: Центральный Банк РФ_"
             )
     except Exception as e:
-        print(f"Сбой Валют: {e}")
-    return "❌ **Ошибка соединения с сервером ЦБ РФ.** Не удалось загрузить свежие курсы."
+        print(f"Ошибка валют ЦБ: {e}")
+        
+    # Понятный пользователю предупредительный сигнал без обмана и ложных цифр
+    return (
+        "⚠️ **Шлюз котировок временно недоступен**\n\n"
+        "Бот не смог получить актуальные курсы от Банка России.\n"
+        "🔧 **Возможные причины:**\n"
+        "• Технические работы на стороне сервера ЦБ.\n"
+        "• Сетевые ограничения вашего интернет-провайдера.\n\n"
+        "💡 _Попробуйте повторить запрос через 1-2 минуты или включите российский VPN._"
+    )
 
-# 2. Честные Акции MOEX
+# 2. Живой парсинг акций напрямую с Московской Биржи (MOEX)
 def get_moex_stocks():
     try:
         url = "https://moex.com"
         response = requests.get(url, timeout=5)
-        if response.status_code != 200:
-            return "⚠️ Торговый сервер Московской Биржи временно недоступен."
+        if response.status_code == 200:
+            rows = response.json()["securities"]["data"]
             
-        data = response.json()
-        rows = data["securities"]["data"]
-        
-        target_tickers = {
-            "SBER": "🍏 Сбербанк", "GAZP": "🔥 Газпром", "LKOH": "⛽️ Лукойл", "YNDX": "📱 Яндекс", "NVTK": "❄️ Новатэк"
-        }
-        
-        result_text = "📈 **Актуальные котировки акций (MOEX):**\n\n"
-        found_any = False
-        for row in rows:
-            secid, price = row[0], row[1]
-            if secid in target_tickers and price is not None:
-                found_any = True
-                result_text += f"{target_tickers[secid]} ({secid}) = **{price:.2f} RUB**\n"
-                
-        if found_any:
-            result_text += "\n🔔 _Источник данных: Московская Биржа_"
-            return result_text
+            target_tickers = {
+                "SBER": "🍏 Сбербанк", "GAZP": "🔥 Газпром", 
+                "LKOH": "⛽️ Лукойл", "YNDX": "📱 Яндекс", "NVTK": "❄️ Новатэк"
+            }
+            
+            result_text = "📈 **Актуальные цены акций на Московской Бирже:**\n\n"
+            found = False
+            
+            for row in rows:
+                secid = row[0]   # Код бумаги (Тикер)
+                price = row[1]   # Цена закрытия/последней сделки
+                if secid in target_tickers and price is not None:
+                    found = True
+                    result_text += f"{target_tickers[secid]} ({secid}) = **{price:.2f} RUB**\n"
+            
+            if found:
+                result_text += "\n⚡️ _Котировки обновлены напрямую из торговой системы MOEX._"
+                return result_text
     except Exception as e:
-        print(f"Сбой Акций: {e}")
-    return "❌ **Ошибка соединения с Московской Биржей.** Запрос цен акций отклонен сетью."
+        print(f"Ошибка акций MOEX: {e}")
+        
+    # Предупредительный сигнал для акций
+    return (
+        "⚠️ **Торговый сервер MOEX не отвечает**\n\n"
+        "Не удалось загрузить живые котировки акций с Московской Биржи.\n"
+        "🔧 **Что делать?**\n"
+        "Если вы находитесь вне РФ, автоматические запросы к бирже могут блокироваться системами защиты. "
+        "Пожалуйста, **включите российский VPN** в настройках вашего устройства и повторите команду `/stocks`."
+    )
 
-# 3. Честные Облигации MOEX (ОФЗ)
+# 3. Живой парсинг доходностей ОФЗ напрямую из долговой секции MOEX
 def get_moex_bonds():
     try:
         url = "https://moex.com"
         response = requests.get(url, timeout=5)
-        if response.status_code != 200:
-            return "⚠️ Сервер долгового рынка Московской Биржи недоступен."
+        if response.status_code == 200:
+            rows = response.json()["securities"]["data"]
             
-        data = response.json()
-        rows = data["securities"]["data"]
-        
-        target_bonds = {
-            "SU26238RMFS4": "🏛 ОФЗ 26238 (Долгосрочная)",
-            "SU26244RMFS2": "🏛 ОФЗ 26244 (Среднесрочная)",
-            "SU26243RMFS4": "🏛 ОФЗ 26243 (Краткосрочная)"
-        }
-        
-        result_text = "🎫 **Актуальная доходность гособлигаций (ОФЗ):**\n\n"
-        found_any = False
-        for row in rows:
-            secid, name, price, bond_yield = row[0], row[1], row[2], row[3]
-            if secid in target_bonds:
-                found_any = True
-                p_str = f"{price:.2f}%" if price is not None else "нет данных"
-                y_str = f"{bond_yield:.2f}%" if bond_yield is not None else "нет данных"
-                result_text += f"**{target_bonds[secid]}**\n▪️ Цена: {p_str} от номинала\n▪️ Доходность к погашению: **{y_str}**\n\n"
-                
-        if found_any:
-            result_text += "💡 _Инвестор фиксирует указанную доходность на весь срок, если продержит ОФЗ до даты погашения._"
-            return result_text
+            target_bonds = {
+                "SU26238RMFS4": "🏛 ОФЗ 26238 (Долгосрочная)",
+                "SU26244RMFS2": "🏛 ОФЗ 26244 (Среднесрочная)",
+                "SU26243RMFS4": "🏛 ОФЗ 26243 (Краткосрочная)"
+            }
+            
+            result_text = "🎫 **Текущая доходность гособлигаций РФ (ОФЗ):**\n\n"
+            found = False
+            
+            for row in rows:
+                secid = row[0]       # Код ОФЗ
+                price = row[1]       # Рыночная цена в % от номинала
+                bond_yield = row[2]  # Эффективная доходность к погашению
+                if secid in target_bonds:
+                    found = True
+                    p_str = f"{price:.2f}%" if price is not None else "нет торгов"
+                    y_str = f"{bond_yield:.2f}%" if bond_yield is not None else "нет данных"
+                    result_text += f"**{target_bonds[secid]}**\n▪️ Рыночная цена: {p_str} от номинала\n▪️ Доходность к погашению: **{y_str}**\n\n"
+            
+            if found:
+                result_text += "💡 _Доходность зафиксируется на весь срок, если держать ОФЗ до погашения._"
+                return result_text
     except Exception as e:
-        print(f"Сбой Облигаций: {e}")
-    return "❌ **Ошибка соединения с долговым рынком MOEX.** Доступ к секции облигаций ограничен."
+        print(f"Ошибка облигаций MOEX: {e}")
+        
+    # Предупредительный сигнал для облигаций
+    return (
+        "⚠️ **Долговой рынок биржи недоступен**\n\n"
+        "Скрипту не удалось подключиться к секции гособлигаций.\n"
+        "🔧 **Решение:**\n"
+        "Для стабильного получения доходностей ОФЗ из вашего региона требуется **активный российский IP-адрес (VPN)**."
+    )
 
-
-# ================= ОБРАБОТЧИКИ КОМАНД (ХЕНДЛЕРЫ) =================
+# ================= 🤖 ОБРАБОТЧИКИ КОМАНД (ХЕНДЛЕРЫ) =================
 
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
@@ -132,17 +156,15 @@ def send_welcome(message):
         "📖 <b>Команды финансовой аналитики:</b>\n"
         "/rates — Курсы мировых валют ЦБ\n"
         "/stocks — Котировки акций (MOEX)\n"
-        "/bonds — Доходность гособлигаций (ОФЗ)\n"
-        "/snowball — Стратегия закрытия долгов\n"
-        "/compound — Магия сложного процента\n"
-        "/safety_net — Финансовая подушка"
+        "/bonds — Доходность гособлигаций (ОФЗ)\n\n"
+        "🧮 <b>Теория:</b> /snowball | /compound | /safety_net"
     )
     bot.send_message(message.chat.id, welcome_text, parse_mode="HTML")
 
 @bot.message_handler(commands=['rates'])
 def show_rates(message):
     if is_spam(message.chat.id): return
-    waiting_msg = bot.send_message(message.chat.id, "🔄 Запрашиваю данные у Банка России...")
+    waiting_msg = bot.send_message(message.chat.id, "🔄 Подключаюсь к Банку России...")
     text = get_forex_rates()
     bot.delete_message(message.chat.id, waiting_msg.message_id)
     bot.send_message(message.chat.id, text, parse_mode="Markdown")
@@ -150,7 +172,7 @@ def show_rates(message):
 @bot.message_handler(commands=['stocks'])
 def show_stocks(message):
     if is_spam(message.chat.id): return
-    waiting_msg = bot.send_message(message.chat.id, "🔄 Подключаюсь к торговой системе MOEX...")
+    waiting_msg = bot.send_message(message.chat.id, "🔄 Опрашиваю торговую систему MOEX...")
     text = get_moex_stocks()
     bot.delete_message(message.chat.id, waiting_msg.message_id)
     bot.send_message(message.chat.id, text, parse_mode="Markdown")
@@ -158,7 +180,7 @@ def show_stocks(message):
 @bot.message_handler(commands=['bonds'])
 def show_bonds(message):
     if is_spam(message.chat.id): return
-    waiting_msg = bot.send_message(message.chat.id, "🔄 Запрашиваю данные долгового рынка ММВБ...")
+    waiting_msg = bot.send_message(message.chat.id, "🔄 Анализирую долговой рынок ММВБ...")
     text = get_moex_bonds()
     bot.delete_message(message.chat.id, waiting_msg.message_id)
     bot.send_message(message.chat.id, text, parse_mode="Markdown")
@@ -185,11 +207,6 @@ def echo_all(message):
     bot.send_message(message.chat.id, "🤖 Я понимаю только команды из меню. Нажми кнопку <b>«Open»</b> для калькуляторов!", parse_mode="HTML")
 
 if __name__ == '__main__':
-    print("Инвестиционная Pro-версия со всеми шлюзами успешно запущена...")
+    # Очищаем терминал перед запуском
+    print("Чистая инвестиционная Pro-версия запущена...")
     bot.infinity_polling()
-
-
-   
-   
-
-  
