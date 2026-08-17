@@ -150,24 +150,30 @@
     </div>
 
 
-    <!-- ВКЛАДКА 3 -->
-    <div id="tab-safety" class="tab-content">
+        <!-- ВКЛАДКА 3: Профессиональный Риск-Менеджмент Подушки -->
+    <div id="tab-safety" class="tab-content" style="display: none;">
         <div class="card">
-            <label>Твои расходы в месяц:</label>
-            <input type="number" id="expenses" value="40000">
+            <label>📊 Бюджет критических трат (в месяц, руб):</label>
+            <input type="number" id="expBase" value="30000" placeholder="Аренда/ипотека, базовая еда, ЖКХ, лекарства">
 
-            <label>Запас безопасности (срок):</label>
+            <label>🚗 Бюджет комфортных трат (в месяц, руб):</label>
+            <input type="number" id="expComfort" value="15000" placeholder="Транспорт, бензин, одежда, подписки, быт">
+
+            <label>🌟 Бюджет избыточных трат (в месяц, руб):</label>
+            <input type="number" id="expPremium" value="10000" placeholder="Кафе, рестораны, кино, шопинг, хобби">
+
+            <label>🛡️ Требуемый горизонт безопасности (срок):</label>
             <select id="safetyPeriod">
-                <option value="3">3 месяца</option>
-                <option value="6" selected>6 месяцев</option>
-                <option value="12">12 месяцев</option>
+                <option value="3">3 месяца (Краткосрочный риск)</option>
+                <option value="6" selected>6 месяцев (Среднесрочный / Стабильный)</option>
+                <option value="12">12 месяцев (Максимальная защита капитала)</option>
             </select>
 
-            <button class="calc-btn" onclick="calcSafetyNet()">💰 Рассчитать резерв</button>
+            <button class="calc-btn" onclick="calcProSafetyNet()">💰 Рассчитать стресс-сценарий</button>
             <div id="safetyResult" class="result"></div>
         </div>
     </div>
-</div>
+
 
 <script>
     var globalDebts = [];
@@ -382,13 +388,50 @@
     }
 
 
-    function calcSafetyNet() {
-        var expenses = parseFloat(document.getElementById('expenses').value) || 0;
-        var period = parseInt(document.getElementById('safetyPeriod').value);
+        // Профессиональный расчет финансового резерва и диверсификации
+    function calcProSafetyNet() {
+        var base = parseFloat(document.getElementById('expBase').value) || 0;
+        var comfort = parseFloat(document.getElementById('expComfort').value) || 0;
+        var premium = parseFloat(document.getElementById('expPremium').value) || 0;
+        var period = parseInt(document.getElementById('safetyPeriod').value) || 6;
+
+        // Расчет двух сценариев
+        // 1. Стабильный сценарий (сохранение текущего уровня жизни со всеми расходами)
+        var totalComfortStyle = (base + comfort + premium) * period;
+
+        // 2. Антикризисный сценарий выживания (Premium-траты убираются полностью, Comfort урезается на 50%)
+        var survivalMonthly = base + (comfort * 0.5);
+        var totalSurvivalStyle = survivalMonthly * period;
+
+        // Распределение капитала по классам ликвидности для защиты от инфляции
+        // 20% — Высокая ликвидность (Кеш / текущий счет для мгновенного доступа)
+        var cashAllocation = totalComfortStyle * 0.20;
+        // 50% — Средняя ликвидность (Накопительный счет с ежедневным начислением % под шаг ЦБ)
+        var bankAllocation = totalComfortStyle * 0.50;
+        // 30% — Низкая ликвидность (Парковка в краткосрочные гособлигации ОФЗ, фиксирующие высокий доход)
+        var bondsAllocation = totalComfortStyle * 0.30;
+
         var resDiv = document.getElementById('safetyResult');
         resDiv.style.display = 'block';
-        resDiv.innerHTML = '🛡️ <b>Размер подушки:</b> ' + (expenses * period).toLocaleString() + '<br><br>💡 <i>Резерв на ' + period + ' мес.</i>';
+        resDiv.innerHTML =
+            '🛡️ <b>Моделирование Резервного Фонда:</b><br><br>' +
+            '🟢 <b>Сценарий «Комфорт» (Сохранение стиля жизни):</b><br>' +
+            '• Требуемый капитал на ' + period + ' мес: <b>' + Math.round(totalComfortStyle).toLocaleString('ru-RU') + ' руб.</b><br>' +
+            '• Средний чек трат в месяц: ' + Math.round(base + comfort + premium).toLocaleString('ru-RU') + ' руб.<br><br>' +
+            '⚠️ <b>Сценарий «Выживание» (Антикризисный план):</b><br>' +
+            '• Минимальный щит на ' + period + ' мес: <b>' + Math.round(totalSurvivalStyle).toLocaleString('ru-RU') + ' руб.</b><br>' +
+            '• Лимит трат в месяц: ' + Math.round(survivalMonthly).toLocaleString('ru-RU') + ' руб. (Урезаны развлечения и 50% быта).<br><br>' +
+            '🏛 <b>Профессиональное распределение резерва (Ликвидность):</b><br>' +
+            '• <b>💵 Наличные/Кеш (20%):</b> ' + Math.round(cashAllocation).toLocaleString('ru-RU') + ' руб. (Доступ за 1 секунду).<br>' +
+            '• <b>🏦 Накопительный счет (50%):</b> ' + Math.round(bankAllocation).toLocaleString('ru-RU') + ' руб. (Снятие за 1 день без потери %).<br>' +
+            '• <b>🎫 Гособлигации ОФЗ (30%):</b> ' + Math.round(bondsAllocation).toLocaleString('ru-RU') + ' руб. (Парковка под фиксированный купон).';
+
+        if (document.activeElement) { document.activeElement.blur(); }
     }
+
+
 </script>
+</div>
 </body>
 </html>
+
