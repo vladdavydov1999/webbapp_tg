@@ -170,7 +170,7 @@ def send_welcome(message):
         "📖 <b>Команды финансовой аналитики:</b>\n"
         "/rates — Курсы мировых валют ЦБ\n"
         "/stocks — Котировки акций (MOEX)\n"
-        "/bonds — Доходность гособлигаций (ОФЗ)"
+        "/bonds — Доходность гособлигаций (ОФЗ)\n"
         "/commodities — Цены на Золото и Нефть Brent\n\n"
     )
     bot.send_message(message.chat.id, welcome_text, parse_mode="HTML", reply_markup=markup)
