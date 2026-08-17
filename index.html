@@ -217,7 +217,7 @@
         if (document.activeElement) { document.activeElement.blur(); }
     }
 
-    function calcCompound() {
+        function calcCompound() {
         var p = parseFloat(document.getElementById('principal').value) || 0;
         var m = parseFloat(document.getElementById('monthly').value) || 0;
         var r = (parseFloat(document.getElementById('rate').value) || 0) / 100 / 12;
@@ -236,7 +236,18 @@
         resDiv.innerHTML = '🏆 <b>Итоговый капитал:</b> ' + Math.round(total).toLocaleString('ru-RU') + ' руб.<br>' +
                            '💰 Твои вложения: ' + Math.round(invested).toLocaleString('ru-RU') + ' руб.<br>' +
                            '📈 Из них проценты: ' + Math.round(total - invested).toLocaleString('ru-RU') + ' руб.';
+
+        // Отправка данных обратно в чат нашего Python-бота
+        var reportText = "📈 Отчет по Сложному Проценту:\n" +
+                         "🏆 Итоговый капитал: " + Math.round(total).toLocaleString('ru-RU') + " руб.\n" +
+                         "💰 Личные вложения: " + Math.round(invested).toLocaleString('ru-RU') + " руб.\n" +
+                         "📊 Проценты: " + Math.round(total - invested).toLocaleString('ru-RU') + " руб.";
+
+        if (window.Telegram && window.Telegram.WebApp) {
+            window.Telegram.WebApp.sendData(reportText);
+        }
     }
+
 
     function addDebt() {
         var name = document.getElementById('debtName').value.trim();
@@ -262,7 +273,7 @@
     function calcSnowball() {
         if (globalDebts.length === 0) { alert("Сначала добавьте долг!"); return; }
         var extra = parseFloat(document.getElementById('debtExtra').value) || 0;
-        
+
         var calcDebts = [];
         for (var i = 0; i < globalDebts.length; i++) {
             calcDebts.push({
@@ -272,12 +283,12 @@
                 closedIn: 0
             });
         }
-        
+
         calcDebts.sort(function(a, b) { return a.balance - b.balance; });
 
         var months = 0;
         var active = true;
-        
+
         while (active && months < 240) {
             months++;
             var currentExtraPool = extra;
