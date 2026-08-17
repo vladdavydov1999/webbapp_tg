@@ -156,7 +156,7 @@ def send_welcome(message):
     markup = types.InlineKeyboardMarkup()
     
     # КРИТИЧЕСКИ ВАЖНО: Ставим v=99, чтобы принудительно убить кэш Telegram!
-    web_app_info = types.WebAppInfo("https://github.io")
+    web_app_info = types.WebAppInfo("https://vladdavydov1999.github.io/webbapp_tg/?v=52")
     
     btn_open = types.InlineKeyboardButton("🚀 Открыть Калькулятор Про", web_app=web_app_info)
     markup.add(btn_open)
