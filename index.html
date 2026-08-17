@@ -2,19 +2,16 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <script src="https://telegram.org"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Финансовый Ассистент Pro</title>
+    <title>Финансовый Аналитик Pro</title>
     <style>
-        /* Современные CSS переменные с поддержкой нативных тем Telegram */
         :root {
-            --bg-color: var(--tg-theme-bg-color, #f4f6fa);
-            --text-color: var(--tg-theme-text-color, #2c3e50);
-            --card-bg: var(--tg-theme-secondary-bg-color, #ffffff);
-            --accent-color: var(--tg-theme-button-color, #2481cc);
-            --accent-text: var(--tg-theme-button-text-color, #ffffff);
+            --bg-color: #f4f6fa;
+            --text-color: #2c3e50;
+            --card-bg: #ffffff;
+            --accent-color: #2481cc;
             --success-color: #2ecc71;
-            --shadow: 0 8px 24px rgba(149, 157, 165, 0.1);
+            --shadow: 0 8px 24px rgba(149, 157, 165, 0.08);
             --border-radius: 16px;
         }
 
@@ -25,154 +22,112 @@
             margin: 0; padding: 20px 16px;
             overflow-x: hidden;
             -webkit-tap-highlight-color: transparent;
-            transition: background-color 0.3s ease;
         }
 
         .container { max-width: 400px; margin: 0 auto; }
+        h2 { text-align: center; font-size: 24px; font-weight: 700; margin: 10px 0 24px; }
 
-        h2 {
-            text-align: center;
-            font-size: 24px;
-            font-weight: 700;
-            color: var(--text-color);
-            margin: 10px 0 24px;
-            letter-spacing: -0.5px;
-        }
-
-        /* Стильные современные табы */
-        .tabs {
-            display: flex;
-            background: rgba(0, 0, 0, 0.04);
-            padding: 4px;
-            border-radius: 12px;
-            margin-bottom: 24px;
-        }
+        .tabs { display: flex; background: rgba(0, 0, 0, 0.04); padding: 4px; border-radius: 12px; margin-bottom: 24px; }
         .tab-btn {
-            flex: 1; text-align: center; padding: 12px 2px; border: none; border-radius: 10px;
-            background: transparent; color: var(--text-color); font-weight: 600;
-            font-size: 13px; cursor: pointer; opacity: 0.7;
-            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            flex: 1; text-align: center; padding: 10px 2px; border: none; border-radius: 10px;
+            background: transparent; color: var(--text-color); font-weight: 600; font-size: 13px; cursor: pointer; opacity: 0.7;
         }
-        .tab-btn.active {
-            background-color: var(--card-bg);
-            color: var(--accent-color);
-            opacity: 1;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-        }
+        .tab-btn.active { background-color: var(--card-bg); color: var(--accent-color); opacity: 1; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
 
-        .tab-content {
-            display: none;
-            animation: fadeIn 0.4s ease-out;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(8px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* Дизайн карточек */
-        .card {
-            background: var(--card-bg);
-            padding: 20px;
-            border-radius: var(--border-radius);
-            margin-bottom: 16px;
-            box-shadow: var(--shadow);
-            border: 1px solid rgba(0, 0, 0, 0.02);
-        }
-
+        .tab-content { display: none; }
+        .card { background: var(--card-bg); padding: 20px; border-radius: var(--border-radius); margin-bottom: 16px; box-shadow: var(--shadow); }
         label { display: block; margin: 0 0 6px 4px; font-weight: 600; font-size: 13px; opacity: 0.8; }
 
-        /* Красивые поля ввода */
         input, select {
             width: 100%; padding: 14px 16px; border: 1.5px solid rgba(0,0,0,0.08); border-radius: 12px;
-            box-sizing: border-box; background: var(--card-bg); color: var(--text-color);
-            font-size: 16px; font-weight: 500; margin-bottom: 16px; outline: none;
-            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+            box-sizing: border-box; background: var(--card-bg); color: var(--text-color); font-size: 16px; font-weight: 500; margin-bottom: 16px; outline: none;
         }
-        input:focus, select:focus {
-            border-color: var(--accent-color);
-            box-shadow: 0 0 0 3px rgba(36, 129, 204, 0.15);
-        }
+        input:focus, select:focus { border-color: var(--accent-color); }
 
-        /* Кнопки */
         button.calc-btn {
-            width: 100%; background-color: var(--accent-color); color: var(--accent-text); border: none;
-            padding: 16px; border-radius: 12px; font-size: 16px; font-weight: 600; margin-top: 8px;
-            cursor: pointer; transition: all 0.2s ease;
-            box-shadow: 0 4px 12px rgba(36, 129, 204, 0.2);
+            width: 100%; background-color: var(--accent-color); color: #ffffff; border: none;
+            padding: 16px; border-radius: 12px; font-size: 16px; font-weight: 600; margin-top: 8px; cursor: pointer;
         }
-        button.calc-btn:active {
-            transform: scale(0.98);
-            opacity: 0.9;
-        }
-        .btn-green {
-            background-color: var(--success-color) !important;
-            box-shadow: 0 4px 12px rgba(46, 204, 113, 0.2) !important;
-        }
+        .btn-green { background-color: var(--success-color) !important; }
 
-        /* Блоки вывода результатов */
         .result {
             margin-top: 20px; padding: 16px; background: rgba(36, 129, 204, 0.07);
-            color: var(--accent-color); border-radius: 12px; font-size: 14px; line-height: 1.5;
-            display: none; border-left: 4px solid var(--accent-color);
-            animation: slideDown 0.3s ease-out;
+            color: var(--text-color); border-radius: 12px; font-size: 14px; line-height: 1.5; display: none; border-left: 4px solid var(--accent-color);
         }
-        @keyframes slideDown {
-            from { opacity: 0; max-height: 0; padding-top: 0; padding-bottom: 0; overflow: hidden; }
-            to { opacity: 1; max-height: 500px; }
-        }
-
-        .debt-item {
-            font-size: 13px; background: rgba(0,0,0,0.03); padding: 10px 14px;
-            border-radius: 10px; margin-top: 8px; font-weight: 500;
-            border-left: 3px solid var(--success-color);
-        }
+        .debt-item { font-size: 13px; background: rgba(0,0,0,0.03); padding: 10px 14px; border-radius: 10px; margin-top: 8px; border-left: 3px solid var(--success-color); }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>📊 Фин-Приложение Pro</h2>
+    <h2>📊 Фин-Терминал Pro</h2>
 
     <div class="tabs">
-        <button id="btn1" class="tab-btn active" onclick="openTab('tab-compound', 'btn1')">📈 Процент</button>
+        <button id="btn1" class="tab-btn active" onclick="openTab('tab-compound', 'btn1')">📈 Портфель</button>
         <button id="btn2" class="tab-btn" onclick="openTab('tab-debts', 'btn2')">📉 Долги</button>
         <button id="btn3" class="tab-btn" onclick="openTab('tab-safety', 'btn3')">💰 Подушка</button>
     </div>
 
-    <!-- ВКЛАДКА 1 -->
+    <!-- ВКЛАДКА 1: Профессиональный Расчет Активов -->
     <div id="tab-compound" class="tab-content" style="display: block;">
         <div class="card">
-            <label>Начальная сумма (руб):</label>
-            <input type="number" id="principal" value="50000">
-            <label>Ежемесячный взнос (руб):</label>
-            <input type="number" id="monthly" value="5000">
-            <label>Годовой процент (%):</label>
-            <input type="number" id="rate" value="16">
-            <label>Срок (лет):</label>
+            <label>Выберите базовый актив:</label>
+            <select id="assetType" onchange="updateAssetLabels()">
+                <option value="RUB">🇷🇺 Российский рубль (RUB)</option>
+                <option value="BYN">🇧🇾 Белорусский рубль (BYN)</option>
+                <option value="USD">🇺🇸 Доллар США (USD)</option>
+                <option value="EUR">🇪🇺 Евро (EUR)</option>
+                <option value="CNY">🇨🇳 Китайский юань (CNY)</option>
+                <option value="XAU">👑 Золото (Тройская унция)</option>
+                <option value="BRENT">🛢 Нефть (Баррель Brent)</option>
+            </select>
+
+            <label id="lblPrincipal">Стартовый капитал:</label>
+            <input type="number" id="principal" value="1000">
+
+            <label id="lblMonthly">Регулярное пополнение (в месяц):</label>
+            <input type="number" id="monthly" value="100">
+
+            <label>Ожидаемый рост актива / доходность (% в год):</label>
+            <input type="number" id="rate" value="12">
+
+            <label>Срок удержания позиции (лет):</label>
             <input type="number" id="years" value="5">
-            <button class="calc-btn" onclick="calcCompound()">Рассчитать капитал</button>
-            <div id="compoundResult" class="result"></div>
+
+            <div style="border-top: 1px solid rgba(0,0,0,0.08); margin-top: 15px; padding-top: 15px;">
+                <label>Прогнозная инфляция по активу (% в год):</label>
+                <input type="number" id="inflation" value="4">
+
+                <label>Налоговая ставка на прибыль (%):</label>
+                <select id="taxRate">
+                    <option value="0">0% (Льготный период / ИИС)</option>
+                    <option value="13" selected>13% (Стандартный налог)</option>
+                    <option value="15">15% (Повышенный налог)</option>
+                </select>
+            </div>
+
+            <button class="calc-btn" onclick="calcProAsset()">Рассчитать стратегию</button>
+            <div id="assetResult" class="result"></div>
         </div>
     </div>
 
     <!-- ВКЛАДКА 2 -->
-    <div id="tab-debts" class="tab-content" style="display: none;">
+    <div id="tab-debts" class="tab-content">
         <div class="card">
             <label>Название долга:</label>
             <input type="text" id="debtName" placeholder="Например: Кредитка">
-            <label>Остаток долга (руб):</label>
+            <label>Остаток долга:</label>
             <input type="number" id="debtBalance" placeholder="30000">
-            <label>Минимальный платёж (руб):</label>
+            <label>Минимальный платёж:</label>
             <input type="number" id="debtMin" placeholder="2000">
             <button class="calc-btn btn-green" onclick="addDebt()">➕ Добавить долг</button>
 
             <div id="addedDebtsBlock" style="margin-top: 20px; display: none;">
-                <label>Добавленные долги:</label>
+                <label>Добавленные обязательства:</label>
                 <div id="debtsList"></div>
             </div>
 
-            <label style="margin-top: 20px;">Ежемесячный ускоритель (руб):</label>
+            <label style="margin-top: 20px;">Ежемесячный ускоритель:</label>
             <input type="number" id="debtExtra" value="0">
 
             <button class="calc-btn" onclick="calcSnowball()">🚗 Запустить Снежный ком</button>
@@ -181,16 +136,16 @@
     </div>
 
     <!-- ВКЛАДКА 3 -->
-    <div id="tab-safety" class="tab-content" style="display: none;">
+    <div id="tab-safety" class="tab-content">
         <div class="card">
-            <label>Твои расходы в месяц (руб):</label>
+            <label>Твои расходы в месяц:</label>
             <input type="number" id="expenses" value="40000">
 
             <label>Запас безопасности (срок):</label>
             <select id="safetyPeriod">
-                <option value="3">3 месяца (Базовый)</option>
-                <option value="6" selected>6 месяцев (Стабильный)</option>
-                <option value="12">12 месяцев (Максимальный)</option>
+                <option value="3">3 месяца</option>
+                <option value="6" selected>6 месяцев</option>
+                <option value="12">12 месяцев</option>
             </select>
 
             <button class="calc-btn" onclick="calcSafetyNet()">💰 Рассчитать резерв</button>
@@ -206,102 +161,116 @@
         document.getElementById('tab-compound').style.display = 'none';
         document.getElementById('tab-debts').style.display = 'none';
         document.getElementById('tab-safety').style.display = 'none';
-
         document.getElementById(tabId).style.display = 'block';
 
         document.getElementById('btn1').className = 'tab-btn';
         document.getElementById('btn2').className = 'tab-btn';
         document.getElementById('btn3').className = 'tab-btn';
-
         document.getElementById(btnId).className = 'tab-btn active';
-
         if (document.activeElement) { document.activeElement.blur(); }
     }
 
-        function calcCompound() {
-        var p = parseFloat(document.getElementById('principal').value) || 0;
-        var m = parseFloat(document.getElementById('monthly').value) || 0;
-        var r = (parseFloat(document.getElementById('rate').value) || 0) / 100 / 12;
-        var years = parseInt(document.getElementById('years').value) || 0;
-        var months = years * 12;
+    // Динамическое изменение подписей в зависимости от золота/нефти/валюты
+    function updateAssetLabels() {
+        var asset = document.getElementById('assetType').value;
+        var p = document.getElementById('lblPrincipal');
+        var m = document.getElementById('lblMonthly');
+        var inf = document.getElementById('inflation');
 
-        var total = p;
-        var invested = p;
-        for (var i = 0; i < months; i++) {
-            total = total * (1 + r) + m;
-            invested += m;
-        }
-
-        var resDiv = document.getElementById('compoundResult');
-        resDiv.style.display = 'block';
-        resDiv.innerHTML = '🏆 <b>Итоговый капитал:</b> ' + Math.round(total).toLocaleString('ru-RU') + ' руб.<br>' +
-                           '💰 Твои вложения: ' + Math.round(invested).toLocaleString('ru-RU') + ' руб.<br>' +
-                           '📈 Из них проценты: ' + Math.round(total - invested).toLocaleString('ru-RU') + ' руб.';
-
-        // Отправка данных обратно в чат нашего Python-бота
-        var reportText = "📈 Отчет по Сложному Проценту:\n" +
-                         "🏆 Итоговый капитал: " + Math.round(total).toLocaleString('ru-RU') + " руб.\n" +
-                         "💰 Личные вложения: " + Math.round(invested).toLocaleString('ru-RU') + " руб.\n" +
-                         "📊 Проценты: " + Math.round(total - invested).toLocaleString('ru-RU') + " руб.";
-
-        if (window.Telegram && window.Telegram.WebApp) {
-            window.Telegram.WebApp.sendData(reportText);
+        if (asset === "XAU") {
+            p.innerText = "Стартовый объем (Тройские унции):";
+            m.innerText = "Ежемесячная закупка (Унций):";
+            inf.value = "2"; // У золота историческая инфляция ниже
+        } else if (asset === "BRENT") {
+            p.innerText = "Стартовый объем (Баррели):";
+            m.innerText = "Ежемесячная закупка (Баррелей):";
+            inf.value = "3";
+        } else {
+            p.innerText = "Стартовый капитал (" + asset + "):";
+            m.innerText = "Ежемесячное пополнение (" + asset + "):";
+            if(asset === "USD" || asset === "EUR") { inf.value = "3"; }
+            else { inf.value = "6"; }
         }
     }
 
+    // Профессиональный расчет макроэкономического портфеля
+    function calcProAsset() {
+        var asset = document.getElementById('assetType').value;
+        var p = parseFloat(document.getElementById('principal').value) || 0;
+        var m = parseFloat(document.getElementById('monthly').value) || 0;
+        var nominalRate = (parseFloat(document.getElementById('rate').value) || 0) / 100;
+        var years = parseInt(document.getElementById('years').value) || 0;
+        var inflationRate = (parseFloat(document.getElementById('inflation').value) || 0) / 100;
+        var taxRate = (parseFloat(document.getElementById('taxRate').value) || 0) / 100;
+
+        var months = years * 12;
+
+        // Математическая модель Фишера для расчета реальной доходности актива
+        var realRateMonthly = ((1 + nominalRate) / (1 + inflationRate) - 1) / 12;
+        var nominalRateMonthly = nominalRate / 12;
+
+                var nominalTotal = p;
+        var realTotal = p;
+        var totalInvested = p;
+
+        for (var i = 0; i < months; i++) {
+            nominalTotal = nominalTotal * (1 + nominalRateMonthly) + m;
+            realTotal = realTotal * (1 + realRateMonthly) + m;
+            totalInvested += m;
+        }
+
+        var profit = nominalTotal - totalInvested;
+        var taxValue = profit > 0 ? profit * taxRate : 0;
+        var totalAfterTax = nominalTotal - taxValue;
+
+        var sign = asset;
+        if(asset === "XAU") sign = "унций";
+        if(asset === "BRENT") sign = "барр.";
+
+        var resDiv = document.getElementById('assetResult');
+        resDiv.style.display = 'block';
+        resDiv.innerHTML =
+            '📊 <b>Номинальный объем позиции:</b><br>' +
+            '• Итого на балансе: <b>' + Math.round(nominalTotal).toLocaleString('ru-RU') + ' ' + sign + '</b><br>' +
+            '• Налог на прирост стоимости: <span style="color: #e74c3c;">-' + Math.round(taxValue).toLocaleString('ru-RU') + ' ' + sign + '</span><br>' +
+            '• Чистый объем за вычетом налога: <b>' + Math.round(totalAfterTax).toLocaleString('ru-RU') + ' ' + sign + '</b><br><br>' +
+            '📉 **Реальная ценность (с учетом инфляции):**<br>' +
+            '• Очищенный от инфляции объем: <span style="color: #2ecc71; font-weight: bold;">' + Math.round(realTotal).toLocaleString('ru-RU') + ' ' + sign + '</span><br>' +
+            '▪️ _Показывает физическую покупательскую способность вашего актива через ' + years + ' лет._<br><br>' +
+            '📥 Физически закуплено вами: ' + Math.round(totalInvested).toLocaleString('ru-RU') + ' ' + sign;
+    }
 
     function addDebt() {
         var name = document.getElementById('debtName').value.trim();
         var balance = parseFloat(document.getElementById('debtBalance').value);
-                var min = parseFloat(document.getElementById('debtMin').value);
-
-        if (!name || isNaN(balance) || isNaN(min)) {
-            alert("Заполните все поля долга!"); return;
-        }
+        var min = parseFloat(document.getElementById('debtMin').value);
+        if (!name || isNaN(balance) || isNaN(min)) { alert("Заполните все поля!"); return; }
 
         globalDebts.push({ name: name, balance: balance, min_payment: min });
-
         var listDiv = document.getElementById('debtsList');
         document.getElementById('addedDebtsBlock').style.display = 'block';
-        listDiv.innerHTML += '<div class="debt-item">📌 <b>' + name + '</b>: ' + balance.toLocaleString('ru-RU') + ' руб. (мин: ' + min + ' руб.)</div>';
+        listDiv.innerHTML += '<div class="debt-item">📌 <b>' + name + '</b>: ' + balance.toLocaleString() + ' (мин: ' + min + ')</div>';
 
         document.getElementById('debtName').value = '';
         document.getElementById('debtBalance').value = '';
         document.getElementById('debtMin').value = '';
-        if (document.activeElement) { document.activeElement.blur(); }
     }
 
     function calcSnowball() {
-        if (globalDebts.length === 0) { alert("Сначала добавьте долг!"); return; }
+        if (globalDebts.length === 0) { alert("Добавьте долг!"); return; }
         var extra = parseFloat(document.getElementById('debtExtra').value) || 0;
-
-        var calcDebts = [];
-        for (var i = 0; i < globalDebts.length; i++) {
-            calcDebts.push({
-                name: globalDebts[i].name,
-                balance: globalDebts[i].balance,
-                min_payment: globalDebts[i].min_payment,
-                closedIn: 0
-            });
-        }
-
+        var calcDebts = globalDebts.map(function(d) { return { ...d, closedIn: 0 }; });
         calcDebts.sort(function(a, b) { return a.balance - b.balance; });
 
-        var months = 0;
-        var active = true;
-
+        var months = 0; var active = true;
         while (active && months < 240) {
-            months++;
-            var currentExtraPool = extra;
-            var anyLeft = false;
-
+            months++; var currentExtraPool = extra; var anyLeft = false;
             for (var j = 0; j < calcDebts.length; j++) {
                 if (calcDebts[j].balance > 0) {
                     var actualMin = Math.min(calcDebts[j].min_payment, calcDebts[j].balance);
                     calcDebts[j].balance -= actualMin;
                 }
             }
-
             for (var k = 0; k < calcDebts.length; k++) {
                 if (calcDebts[k].balance > 0) {
                     var payOff = Math.min(currentExtraPool, calcDebts[k].balance);
@@ -310,14 +279,9 @@
                     if (currentExtraPool <= 0) break;
                 }
             }
-
             for (var m = 0; m < calcDebts.length; m++) {
-                if (calcDebts[m].balance <= 0 && calcDebts[m].closedIn === 0) {
-                    calcDebts[m].closedIn = months;
-                }
-                if (calcDebts[m].balance > 0) {
-                    anyLeft = true;
-                }
+                if (calcDebts[m].balance <= 0 && calcDebts[m].closedIn === 0) { calcDebts[m].closedIn = months; }
+                if (calcDebts[m].balance > 0) { anyLeft = true; }
             }
             if (!anyLeft) { active = false; }
         }
@@ -330,24 +294,15 @@
         }
         html += '<br>🎉 <b>Полная свобода через: ' + months + ' мес.</b>';
         resDiv.innerHTML = html;
-        if (document.activeElement) { document.activeElement.blur(); }
     }
 
     function calcSafetyNet() {
         var expenses = parseFloat(document.getElementById('expenses').value) || 0;
         var period = parseInt(document.getElementById('safetyPeriod').value);
-        var totalRequired = expenses * period;
-
         var resDiv = document.getElementById('safetyResult');
         resDiv.style.display = 'block';
-        resDiv.innerHTML = '🛡️ <b>Размер подушки:</b> ' + totalRequired.toLocaleString('ru-RU') + ' руб.<br><br>' +
-                           '💡 <i>Это ваш щит от форс-мажоров на ' + period + ' мес.</i>';
-        if (document.activeElement) { document.activeElement.blur(); }
+        resDiv.innerHTML = '🛡️ <b>Размер подушки:</b> ' + (expenses * period).toLocaleString() + '<br><br>💡 <i>Резерв на ' + period + ' мес.</i>';
     }
 </script>
 </body>
 </html>
-
-  
-
-
