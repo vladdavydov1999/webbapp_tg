@@ -152,12 +152,13 @@ def get_moex_bonds():
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
     if is_spam(message.chat.id): return
-
-    # Создаем интерактивную инлайн-клавиатуру
+    
     markup = types.InlineKeyboardMarkup()
-    # КРИТИЧЕСКИ ВАЖНО: Привязываем ссылку на Web App к кнопке внутри чата!
-        web_app_info = types.WebAppInfo("https://github.io") # укажи свою актуальную версию
-    btn_open = types.InlineKeyboardButton("🚀 Открыть Калькулятор Про", web_app = web_app_info)
+    
+    # КРИТИЧЕСКИ ВАЖНО: Ставим v=99, чтобы принудительно убить кэш Telegram!
+    web_app_info = types.WebAppInfo("https://github.io")
+    
+    btn_open = types.InlineKeyboardButton("🚀 Открыть Калькулятор Про", web_app=web_app_info)
     markup.add(btn_open)
 
     welcome_text = (
@@ -170,6 +171,7 @@ def send_welcome(message):
         "/bonds — Доходность гособлигаций (ОФЗ)"
     )
     bot.send_message(message.chat.id, welcome_text, parse_mode="HTML", reply_markup=markup)
+
 
 
 @bot.message_handler(commands=['rates'])
