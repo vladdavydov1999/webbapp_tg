@@ -1,3 +1,5 @@
+# 8806371020:AAEWYJuSncBvdEGksANUfZEyx1sUdp6QR3c
+
 import telebot
 import time
 import requests
@@ -152,12 +154,12 @@ def get_moex_bonds():
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
     if is_spam(message.chat.id): return
-    
+
     markup = types.InlineKeyboardMarkup()
-    
+
     # КРИТИЧЕСКИ ВАЖНО: Ставим v=99, чтобы принудительно убить кэш Telegram!
     web_app_info = types.WebAppInfo("https://vladdavydov1999.github.io/webbapp_tg/?v=52")
-    
+
     btn_open = types.InlineKeyboardButton("🚀 Открыть Калькулятор Про", web_app=web_app_info)
     markup.add(btn_open)
 
@@ -169,9 +171,9 @@ def send_welcome(message):
         "/rates — Курсы мировых валют ЦБ\n"
         "/stocks — Котировки акций (MOEX)\n"
         "/bonds — Доходность гособлигаций (ОФЗ)"
+        "/commodities — Цены на Золото и Нефть Brent\n\n"
     )
     bot.send_message(message.chat.id, welcome_text, parse_mode="HTML", reply_markup=markup)
-
 
 
 @bot.message_handler(commands=['rates'])
@@ -229,6 +231,71 @@ def handle_web_app_data(message):
         message.chat.id,
         f"📊 **Результаты вашего расчета сохранены в историю чата:**\n\n{user_report}"
     )
+
+
+# 4. Живой парсинг золота и нефти Brent напрямую с Московской Биржи (MOEX)
+def get_moex_commodities():
+    try:
+        # Запрашиваем данные по рынку драгоценных металлов (валютный рынок MOEX)
+        url_gold = "https://moex.com"
+        response_gold = requests.get(url_gold, timeout=5)
+
+        # Запрашиваем данные по нефти Brent (индикативные курсы мировых товаров MOEX)
+        url_brent = "https://moex.com"
+        response_brent = requests.get(url_brent, timeout=5)
+
+        gold_price = None
+        brent_price = None
+
+        # Разбираем золото
+        if response_gold.status_code == 200:
+            data_gold = response_gold.json()["marketdata"]["data"]
+            if data_gold and len(data_gold) > 0:
+                gold_price = data_gold[0][1]  # Цена за 1 грамм в рублях
+
+        # Разбираем нефть
+        if response_brent.status_code == 200:
+            data_brent = response_brent.json()["marketdata"]["data"]
+            if data_brent and len(data_brent) > 0:
+                brent_price = data_brent[0][1]  # Цена за 1 баррель в USD
+
+        if gold_price or brent_price:
+            # Переводим золото в унции для профессиональной аналитики (1 унция = 31.1035 грамма)
+            gold_ounce = gold_price * 31.1035 if gold_price else 0
+
+            text = "🏆 **Котировки сырьевых товаров (MOEX):**\n\n"
+            if gold_price:
+                text += f"👑 **Золото (XAU):**\n"
+                text += f"▪️ 1 грамм = **{gold_price:.2f} RUB**\n"
+                text += f"▪️ 1 тройская унция = **{gold_ounce:.2f} RUB**\n\n"
+            if brent_price:
+                text += f"🛢 **Нефть Brent (OIL):**\n"
+                text += f"▪️ 1 баррель = **{brent_price:.2f} USD**\n\n"
+
+            text += "⚡️ _Данные обновлены в реальном времени напрямую из торговой системы MOEX._"
+            return text
+
+    except Exception as e:
+        print(f"Ошибка сырьевого модуля MOEX: {e}")
+
+    # Честное предупреждение при сбое сети
+    return (
+        "⚠️ **Сырьевой шлюз биржи недоступен**\n\n"
+        "Не удалось загрузить живые котировки золота и нефти.\n"
+        "🔧 **Решение:**\n"
+        "Убедитесь, что на вашем сервере **активен российский VPN**, так как Московская Биржа ограничивает запросы из внешних IP-диапазонов."
+    )
+
+
+# --- ОБРАБОТЧИК КОМАНДЫ /commodities ---
+@bot.message_handler(commands=['commodities'])
+def show_commodities(message):
+    if is_spam(message.chat.id): return
+    waiting_msg = bot.send_message(message.chat.id, "🔄 Опрашиваю сырьевые секции Московской Биржи...")
+    text = get_moex_commodities()
+    bot.delete_message(message.chat.id, waiting_msg.message_id)
+    bot.send_message(message.chat.id, text, parse_mode="Markdown")
+
 
 @bot.message_handler(func=lambda message: True)
 def echo_all(message):
