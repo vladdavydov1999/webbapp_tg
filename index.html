@@ -111,29 +111,44 @@
         </div>
     </div>
 
-    <!-- ВКЛАДКА 2 -->
-    <div id="tab-debts" class="tab-content">
+        <!-- ВКЛАДКА 2: Профессиональный Кредитный Анализ -->
+    <div id="tab-debts" class="tab-content" style="display: none;">
         <div class="card">
-            <label>Название долга:</label>
-            <input type="text" id="debtName" placeholder="Например: Кредитка">
-            <label>Остаток долга:</label>
-            <input type="number" id="debtBalance" placeholder="30000">
-            <label>Минимальный платёж:</label>
-            <input type="number" id="debtMin" placeholder="2000">
-            <button class="calc-btn btn-green" onclick="addDebt()">➕ Добавить долг</button>
+            <label>Название обязательства (кредита):</label>
+            <input type="text" id="debtName" placeholder="Например: Кредитка Сбер">
+
+            <label>Текущий остаток долга (руб):</label>
+            <input type="number" id="debtBalance" placeholder="50000">
+
+            <label>Процентная ставка (% в год):</label>
+            <input type="number" id="debtRate" placeholder="29.9" value="15">
+
+            <label>Минимальный ежемесячный платёж (руб):</label>
+            <input type="number" id="debtMin" placeholder="3000">
+
+            <button class="calc-btn btn-green" onclick="addProDebt()">➕ Внести кредит в реестр</button>
 
             <div id="addedDebtsBlock" style="margin-top: 20px; display: none;">
-                <label>Добавленные обязательства:</label>
+                <label>Реестр активных обязательств:</label>
                 <div id="debtsList"></div>
             </div>
 
-            <label style="margin-top: 20px;">Ежемесячный ускоритель:</label>
-            <input type="number" id="debtExtra" value="0">
+            <div style="border-top: 1px solid rgba(0,0,0,0.08); margin-top: 20px; padding-top: 15px;">
+                <label>Ежемесячный ускоритель досрочного гашения (руб):</label>
+                <input type="number" id="debtExtra" value="5000">
 
-            <button class="calc-btn" onclick="calcSnowball()">🚗 Запустить Снежный ком</button>
+                <label>Выберите стратегию оптимизации:</label>
+                <select id="debtStrategy">
+                    <option value="avalanche" selected>⚡️ Кредитная Лавина (Экономия на процентах)</option>
+                    <option value="snowball">🚗 Снежный ком (Психологический комфорт)</option>
+                </select>
+            </div>
+
+            <button class="calc-btn" onclick="calcProDebts()">🚗 Запустить симуляцию гашения</button>
             <div id="snowballResult" class="result"></div>
         </div>
     </div>
+
 
     <!-- ВКЛАДКА 3 -->
     <div id="tab-safety" class="tab-content">
@@ -240,61 +255,132 @@
             '📥 Физически закуплено вами: ' + Math.round(totalInvested).toLocaleString('ru-RU') + ' ' + sign;
     }
 
-    function addDebt() {
+        // Профессиональное добавление кредита с учетом процентной ставки
+    function addProDebt() {
         var name = document.getElementById('debtName').value.trim();
         var balance = parseFloat(document.getElementById('debtBalance').value);
+        var rate = parseFloat(document.getElementById('debtRate').value);
         var min = parseFloat(document.getElementById('debtMin').value);
-        if (!name || isNaN(balance) || isNaN(min)) { alert("Заполните все поля!"); return; }
 
-        globalDebts.push({ name: name, balance: balance, min_payment: min });
+        if (!name || isNaN(balance) || isNaN(rate) || isNaN(min)) {
+            alert("Пожалуйста, заполните все поля кредита числовыми значениями!");
+            return;
+        }
+
+        // Сохраняем в глобальный массив
+        globalDebts.push({ name: name, balance: balance, rate: rate, min_payment: min });
+
         var listDiv = document.getElementById('debtsList');
         document.getElementById('addedDebtsBlock').style.display = 'block';
-        listDiv.innerHTML += '<div class="debt-item">📌 <b>' + name + '</b>: ' + balance.toLocaleString() + ' (мин: ' + min + ')</div>';
+        listDiv.innerHTML += '<div class="debt-item">📌 <b>' + name + '</b>: ' + balance.toLocaleString('ru-RU') + ' руб. (Ставка: ' + rate + '%, Мин. платёж: ' + min + ' руб.)</div>';
 
+        // Очищаем поля ввода
         document.getElementById('debtName').value = '';
         document.getElementById('debtBalance').value = '';
+        document.getElementById('debtRate').value = '15';
         document.getElementById('debtMin').value = '';
+        if (document.activeElement) { document.activeElement.blur(); }
     }
 
-    function calcSnowball() {
-        if (globalDebts.length === 0) { alert("Добавьте долг!"); return; }
-        var extra = parseFloat(document.getElementById('debtExtra').value) || 0;
-        var calcDebts = globalDebts.map(function(d) { return { ...d, closedIn: 0 }; });
-        calcDebts.sort(function(a, b) { return a.balance - b.balance; });
+    // Симуляция кредитного гашения: Лавина против Снежного кома
+    function calcProDebts() {
+        if (globalDebts.length === 0) { alert("Реестр обязательств пуст! Сначала добавьте хотя бы один кредит."); return; }
 
-        var months = 0; var active = true;
+        var extra = parseFloat(document.getElementById('debtExtra').value) || 0;
+        var strategy = document.getElementById('debtStrategy').value;
+
+        // Глубокое копирование массива долгов для расчетов
+        var calcDebts = globalDebts.map(function(d) {
+            return { name: d.name, balance: d.balance, rate: d.rate, min_payment: d.min_payment, closedIn: 0 };
+        });
+
+        var months = 0;
+        var totalInterestsPaid = 0; // Счетчик чистой переплаты по процентам банкам
+        var active = true;
+
+        // Эмуляция жизни бюджета по месяцам (ограничение 20 лет, чтобы не уйти в вечный цикл при нехватке денег)
         while (active && months < 240) {
-            months++; var currentExtraPool = extra; var anyLeft = false;
+            months++;
+            var currentExtraPool = extra;
+            var anyLeft = false;
+
+            // 1. НАЧИСЛЕНИЕ БАНКОВСКИХ ПРОЦЕНТОВ за текущий месяц на остаток долга
+            for (var i = 0; i < calcDebts.length; i++) {
+                if (calcDebts[i].balance > 0) {
+                    var monthlyInterest = calcDebts[i].balance * ((calcDebts[i].rate / 100) / 12);
+                    calcDebts[i].balance += monthlyInterest;
+                    totalInterestsPaid += monthlyInterest; // Фиксируем убытки инвестора
+                }
+            }
+
+            // 2. ВЫЧЕТ МИНИМАЛЬНЫХ ПЛАТЕЖЕЙ (Обязательная программа, чтобы не было просрочек)
             for (var j = 0; j < calcDebts.length; j++) {
                 if (calcDebts[j].balance > 0) {
                     var actualMin = Math.min(calcDebts[j].min_payment, calcDebts[j].balance);
                     calcDebts[j].balance -= actualMin;
+
+                    // Если минимальный платеж перекрыл долг с запасом, остаток денег возвращается в пул досрочного гашения
+                    if (actualMin > calcDebts[j].balance && calcDebts[j].balance === 0) {
+                        currentExtraPool += (actualMin - calcDebts[j].balance);
+                    }
                 }
             }
+
+            // 3. СОРТИРОВКА ДЛЯ ДОСРОЧНОГО ГАШЕНИЯ (Суть стратегий)
+            if (strategy === "avalanche") {
+                // Лавина: сортируем по УБЫВАНИЮ процентной ставки (бьем самый дорогой кредит)
+                calcDebts.sort(function(a, b) { return b.rate - a.rate; });
+            } else {
+                // Снежный ком: сортируем по ВОЗРАСТАНИЮ остатка долга (бьем самый маленький кредит)
+                calcDebts.sort(function(a, b) { return a.balance - b.balance; });
+            }
+
+            // 4. НАПРАВЛЕНИЕ СВОБОДНЫХ ДЕНЕГ (Ускорителя) на приоритетный кредит
             for (var k = 0; k < calcDebts.length; k++) {
                 if (calcDebts[k].balance > 0) {
                     var payOff = Math.min(currentExtraPool, calcDebts[k].balance);
                     calcDebts[k].balance -= payOff;
                     currentExtraPool -= payOff;
-                    if (currentExtraPool <= 0) break;
+                    if (currentExtraPool <= 0) break; // Весь свободный кэш на этот месяц исчерпан
                 }
             }
+
+            // 5. ФИКСАЦИЯ СРОКОВ ЗАКРЫТИЯ позиций
             for (var m = 0; m < calcDebts.length; m++) {
-                if (calcDebts[m].balance <= 0 && calcDebts[m].closedIn === 0) { calcDebts[m].closedIn = months; }
-                if (calcDebts[m].balance > 0) { anyLeft = true; }
+                if (calcDebts[m].balance <= 0 && calcDebts[m].closedIn === 0) {
+                    calcDebts[m].closedIn = months;
+                }
+                if (calcDebts[m].balance > 0) {
+                    anyLeft = true; // Хотя бы один кредит еще активен
+                }
             }
+
+            // Если все балансы обнулились — останавливаем эмуляцию
             if (!anyLeft) { active = false; }
         }
 
+        // Выводим профессиональное заключение
         var resDiv = document.getElementById('snowballResult');
         resDiv.style.display = 'block';
-        var html = '<b>🗓 План погашения долгов:</b><br><br>';
+
+        var stratName = strategy === "avalanche" ? "Кредитная Лавина" : "Снежный ком";
+        var html = '📊 <b>Анализ долговой нагрузки (Модель: ' + stratName + '):</b><br><br>';
+
         for (var n = 0; n < calcDebts.length; n++) {
-            html += (n+1) + '. <b>' + calcDebts[n].name + '</b> — через <b>' + calcDebts[n].closedIn + '</b> мес.<br>';
+            html += (n+1) + '. <b>' + calcDebts[n].name + '</b> — ликвидация через: <b>' + calcDebts[n].closedIn + '</b> мес.<br>';
         }
-        html += '<br>🎉 <b>Полная свобода через: ' + months + ' мес.</b>';
+
+        html += '<br>🚨 <b>Общие потери на процентах банков:</b> <span style="color: #e74c3c; font-weight: 600;">' + Math.round(totalInterestsPaid).toLocaleString('ru-RU') + ' руб.</span><br>';
+        html += '🎉 <b>Полное освобождение от кредитного бремени: <span style="color: #2ecc71; font-weight: bold;">' + months + ' мес.</span></b>';
+
+        if (months >= 240) {
+            html += '<br><br>⚠️ <span style="color: #e67e22;"><b>Внимание:</b> Ваших минимальных платежей и ускорителя недостаточно для перекрытия набегающих процентов на горизонте 20 лет. Увеличьте ежемесячный ускоритель!</span>';
+        }
+
         resDiv.innerHTML = html;
+        if (document.activeElement) { document.activeElement.blur(); }
     }
+
 
     function calcSafetyNet() {
         var expenses = parseFloat(document.getElementById('expenses').value) || 0;
