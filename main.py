@@ -154,26 +154,28 @@ def get_moex_bonds():
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
     if is_spam(message.chat.id): return
-
+    
     markup = types.InlineKeyboardMarkup()
-
-    # КРИТИЧЕСКИ ВАЖНО: Ставим v=99, чтобы принудительно убить кэш Telegram!
-    web_app_info = types.WebAppInfo("https://vladdavydov1999.github.io/webbapp_tg/?v=52")
-
-    btn_open = types.InlineKeyboardButton("🚀 Открыть Калькулятор Про", web_app=web_app_info)
+    web_app_info = types.WebAppInfo("https://github.io")
+    btn_open = types.InlineKeyboardButton("🖥️ Открыть Инвест-Терминал", web_app=web_app_info)
     markup.add(btn_open)
 
     welcome_text = (
-        "👋 <b>Привет! Я твой личный Финансовый Ассистент Pro.</b>\n\n"
-        "Чтобы запустить продвинутый калькулятор и иметь возможность сохранять отчеты прямо в этот чат, "
-        "нажмите на кнопку <b>«Открыть Калькулятор Про»</b> ниже👇\n\n"
-        "📖 <b>Команды финансовой аналитики:</b>\n"
-        "/rates — Курсы мировых валют ЦБ\n"
-        "/stocks — Котировки акций (MOEX)\n"
-        "/bonds — Доходность гособлигаций (ОФЗ)\n"
-        "/commodities — Цены на Золото и Нефть Brent\n\n"
+        "🧠 **Инвестиционный Терминал & Финансовый Помощник Pro**\n\n"
+        "Добро пожаловать в систему персонального риск-менеджмента и макроэкономического анализа.\n\n"
+        "📈 **Внутри Web-Платформы вам доступны:**\n"
+        "• Моделирование портфелей в мировых активах, валютах, Золоте и Нефти Brent с учетом реальной инфляции и налогообложения.\n"
+        "• Оптимизация кредитной нагрузки по математическим алгоритмам «Лавина» и «Снежный ком» с расчетом чистой переплаты банкам.\n"
+        "• Стресс-тестирование капитала и формирование подушки безопасности по классам ликвидности.\n\n"
+        "📊 **Прямые команды серверной аналитики (MOEX / ЦБ):**\n"
+        "/rates — Свежие курсы мировых валют к RUB и BYN\n"
+        "/stocks — Живые котировки топ-акций на Московской Бирже\n"
+        "/bonds — Текущая доходность к погашению гособлигаций (ОФЗ)\n"
+        "/commodities — Спотовые цены на Золото и Нефть Brent\n\n"
+        "👇 Для запуска интерактивных калькуляторов и симуляций нажмите кнопку ниже:"
     )
-    bot.send_message(message.chat.id, welcome_text, parse_mode="HTML", reply_markup=markup)
+    bot.send_message(message.chat.id, welcome_text, parse_mode="Markdown", reply_markup=markup)
+
 
 
 @bot.message_handler(commands=['rates'])
