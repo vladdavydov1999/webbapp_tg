@@ -1,15 +1,12 @@
-# 8806371020:AAEWYJuSncBvdEGksANUfZEyx1sUdp6QR3c
-
 import telebot
 import time
 import requests
-from telebot import types
 
 # Инициализируем бота
-TOKEN = 'TOKEN'
+TOKEN = 'ТОКЕН'
 bot = telebot.TeleBot(TOKEN)
 
-# ================= 🛡️ МОДУЛЬ АНТИФЛУДА =================
+# ================= 🛡️ МОДУЛЬ АНТИФЛУДА (ЗАЩИТА ОТ СПАМА) =================
 
 last_message_time = {}
 
@@ -26,9 +23,9 @@ def is_spam(chat_id):
     return False
 
 
-# ================= 📈 ИНВЕСТ-МОДУЛИ С ИСПРАВЛЕННЫМИ ИНДЕКСАМИ =================
+# ================= 📈 ЧИСТЫЕ СЕТЕВЫЕ ИНВЕСТ-МОДУЛИ (ММВБ / ЦБ) =================
 
-# 1. Прямой запрос к ЦБ РФ (Валюты)
+# 1. Запрос к ЦБ РФ (Валюты)
 def get_forex_rates():
     try:
         url = "https://cbr-xml-daily.ru"
@@ -41,6 +38,7 @@ def get_forex_rates():
             cny_rub = valute["CNY"]["Value"] / valute["CNY"]["Nominal"]
             byn_rub = valute["BYN"]["Value"]
 
+            # Точный математический кросс-курс для инвесторов из Беларуси
             usd_byn = usd_rub / byn_rub if byn_rub else 0
             eur_byn = eur_rub / byn_rub if byn_rub else 0
             cny_byn = (cny_rub * 10) / byn_rub if byn_rub else 0
@@ -58,7 +56,7 @@ def get_forex_rates():
                 "🏛 _Источник данных: Центральный Банк РФ_"
             )
     except Exception as e:
-        print(f"Критическая ошибка Валют ЦБ: {e}")
+        print(f"Ошибка валют ЦБ: {e}")
 
     return (
         "⚠️ **Шлюз котировок временно недоступен**\n\n"
@@ -70,7 +68,7 @@ def get_forex_rates():
     )
 
 
-# 2. ПРАВИЛЬНЫЙ парсинг акций напрямую с Московской Биржи (MOEX)
+# 2. Парсинг акций напрямую с Московской Биржи (MOEX)
 def get_moex_stocks():
     try:
         url = "https://moex.com"
@@ -87,8 +85,8 @@ def get_moex_stocks():
             found = False
 
             for row in rows:
-                secid = row[0]  # ИСПРАВЛЕНО: Берем первый элемент строки (Тикер)
-                price = row[1]  # ИСПРАВЛЕНО: Берем второй элемент строки (Цена)
+                secid = row[0]  # Код бумаги (Тикер)
+                price = row[1]  # Цена закрытия/последней сделки
                 if secid in target_tickers and price is not None:
                     found = True
                     result_text += f"{target_tickers[secid]} ({secid}) = **{price:.2f} RUB**\n"
@@ -97,7 +95,7 @@ def get_moex_stocks():
                 result_text += "\n⚡️ _Котировки обновлены напрямую из торговой системы MOEX._"
                 return result_text
     except Exception as e:
-        print(f"Критическая ошибка акций MOEX: {e}")
+        print(f"Ошибка акций MOEX: {e}")
 
     return (
         "⚠️ **Торговый сервер MOEX не отвечает**\n\n"
@@ -108,7 +106,7 @@ def get_moex_stocks():
     )
 
 
-# 3. ПРАВИЛЬНЫЙ парсинг доходностей ОФЗ напрямую из долговой секции MOEX
+# 3. Парсинг доходностей ОФЗ напрямую из долговой секции MOEX
 def get_moex_bonds():
     try:
         url = "https://moex.com"
@@ -126,20 +124,20 @@ def get_moex_bonds():
             found = False
 
             for row in rows:
-                secid = row[0]  # ИСПРАВЛЕНО: Берем тикер ОФЗ
-                price = row[1]  # ИСПРАВЛЕНО: Берем цену в %
-                bond_yield = row[2]  # ИСПРАВЛЕНО: Берем эффективную доходность
+                secid = row[0]  # Код ОФЗ
+                price = row[1]  # Рыночная цена в % от номинала
+                bond_yield = row[2]  # Эффективная доходность к погашению
                 if secid in target_bonds:
                     found = True
                     p_str = f"{price:.2f}%" if price is not None else "нет торгов"
                     y_str = f"{bond_yield:.2f}%" if bond_yield is not None else "нет данных"
-                    result_text += f"**{target_bonds[secid]}**\n▪️ Рыночная цена: {p_str} от номинала\n▪️ Доходность к погашению: **{y_str}**\n\n"
+                    result_text += f"**{target_bonds[secid]}**\n▪️ Цена: {p_str} от номинала\n▪️ Доходность: **{y_str}**\n\n"
 
             if found:
                 result_text += "💡 _Доходность зафиксируется на весь срок, если держать ОФЗ до погашения._"
                 return result_text
     except Exception as e:
-        print(f"Критическая ошибка облигаций MOEX: {e}")
+        print(f"Ошибка облигаций MOEX: {e}")
 
     return (
         "⚠️ **Долговой рынок биржи недоступен**\n\n"
@@ -149,40 +147,71 @@ def get_moex_bonds():
     )
 
 
+# 4. Парсинг сырьевых товаров (Золото и Нефть) с MOEX
+def get_moex_commodities():
+    try:
+        # GLDRUB_TOM (Золото в рублях за грамм на валютном рынке)
+        url_gold = "https://moex.com"
+        # BRENT (Индикативный курс нефти на сырьевом рынке)
+        url_brent = "https://moex.com"
+
+        response_gold = requests.get(url_gold, timeout=5)
+        response_brent = requests.get(url_brent, timeout=5)
+
+        gold_price = None
+        brent_price = None
+
+        if response_gold.status_code == 200:
+            data = response_gold.json()["marketdata"]["data"]
+            if data: gold_price = data[0][1]
+
+        if response_brent.status_code == 200:
+            data = response_brent.json()["marketdata"]["data"]
+            if data: brent_price = data[0][1]
+
+        if gold_price or brent_price:
+            text = "🏆 **Котировки сырьевых товаров (MOEX):**\n\n"
+            if gold_price:
+                gold_ounce = gold_price * 31.1035  # Конвертируем грамм в тройскую унцию
+                text += f"👑 **Золото (XAU):**\n▪️ 1 грамм = **{gold_price:.2f} RUB**\n▪️ 1 тройская унция = **{gold_ounce:.2f} RUB**\n\n"
+            if brent_price:
+                text += f"🛢 **Нефть Brent (OIL):**\n▪️ 1 баррель = **{brent_price:.2f} USD**\n\n"
+
+            text += "⚡️ _Данные обновлены напрямую из торгового ядра Московской Биржи._"
+            return text
+    except Exception as e:
+        print(f"Ошибка товаров: {e}")
+
+    return (
+        "⚠️ **Сырьевой шлюз биржи недоступен**\n\n"
+        "Не удалось загрузить живые котировки золота и нефти.\n"
+        "🔧 **Решение:**\n"
+        "Убедитесь, что на вашем сервере **активен российский VPN**, так как Московская Биржа ограничивает запросы из внешних IP-диапазонов."
+    )
+
+
 # ================= 🤖 ОБРАБОТЧИКИ КОМАНД (ХЕНДЛЕРЫ) =================
 
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
     if is_spam(message.chat.id): return
-    
-    # Создаем абсолютно новую клавиатуру
-    clean_markup = types.InlineKeyboardMarkup()
-    
-    # Прописываем чистый адрес твоего Web App с жестким сбросом кэша v=300
-    clean_web_app = types.WebAppInfo("https://github.io")
-    
-    # Привязываем полностью обновленный объект кнопки
-    btn_terminal = types.InlineKeyboardButton("🖥️ Открыть Инвест-Терминал", web_app=clean_web_app)
-    clean_markup.add(btn_terminal)
 
     welcome_text = (
         "🧠 **Инвестиционный Терминал & Финансовый Помощник Pro**\n\n"
         "Добро пожаловать в систему персонального риск-менеджмента и макроэкономического анализа.\n\n"
-        "📈 **Внутри Web-Платформы вам доступны:**\n"
-        "• Моделирование портфелей в мировых активах, валютах, Золоте и Нефти Brent с учетом реальной инфляции и налогообложения.\n"
-        "• Оптимизация кредитной нагрузки по математическим алгоритмам «Лавина» и «Снежный ком» с расчетом чистой переплаты банкам.\n"
-        "• Стресс-тестирование капитала и формирование подушки безопасности по классам ликвидности.\n\n"
+        "🖥️ **Интерактивная Web-Платформа:**\n"
+        "Для запуска симуляторов и профессиональных калькуляторов нажмите синюю кнопку **«Open»** в левом нижнем углу экрана.\n\n"
+        "📈 **Внутри Терминала вам доступны:**\n"
+        "• Расчет сложных портфелей в валютах, Золоте и Нефти с учетом инфляции и налогов.\n"
+        "• Оптимизация кредитов по алгоритмам «Лавина» и «Снежный ком» с расчетом переплаты.\n"
+        "• Моделирование подушки безопасности по классам ликвидности.\n\n"
         "📊 **Прямые команды серверной аналитики (MOEX / ЦБ):**\n"
         "/rates — Свежие курсы мировых валют к RUB и BYN\n"
         "/stocks — Живые котировки топ-акций на Московской Бирже\n"
         "/bonds — Текущая доходность к погашению гособлигаций (ОФЗ)\n"
-        "/commodities — Спотовые цены на Золото и Нефть Brent\n\n"
-        "👇 Для запуска интерактивных калькуляторов и симуляций нажмите кнопку ниже:"
+        "/commodities — Спотовые цены на Золото и Нефть Brent"
     )
-    bot.send_message(message.chat.id, welcome_text, parse_mode="Markdown", reply_markup=clean_markup)
-
-   
-
+    bot.send_message(message.chat.id, welcome_text, parse_mode="Markdown")
 
 
 @bot.message_handler(commands=['rates'])
@@ -197,6 +226,7 @@ def show_rates(message):
 @bot.message_handler(commands=['stocks'])
 def show_stocks(message):
     if is_spam(message.chat.id): return
+
     waiting_msg = bot.send_message(message.chat.id, "🔄 Опрашиваю торговую систему MOEX...")
     text = get_moex_stocks()
     bot.delete_message(message.chat.id, waiting_msg.message_id)
@@ -208,6 +238,15 @@ def show_bonds(message):
     if is_spam(message.chat.id): return
     waiting_msg = bot.send_message(message.chat.id, "🔄 Анализирую долговой рынок ММВБ...")
     text = get_moex_bonds()
+    bot.delete_message(message.chat.id, waiting_msg.message_id)
+    bot.send_message(message.chat.id, text, parse_mode="Markdown")
+
+
+@bot.message_handler(commands=['commodities'])
+def show_commodities(message):
+    if is_spam(message.chat.id): return
+    waiting_msg = bot.send_message(message.chat.id, "🔄 Запрашиваю цены фьючерсов и металлов на MOEX...")
+    text = get_moex_commodities()
     bot.delete_message(message.chat.id, waiting_msg.message_id)
     bot.send_message(message.chat.id, text, parse_mode="Markdown")
 
@@ -233,87 +272,18 @@ def info_safety(message):
     bot.send_message(message.chat.id, "💰 **Подушка безопасности**: резерв на 3-6 месяцев обязательных расходов.",
                      parse_mode="Markdown")
 
-@bot.message_handler(content_types=['web_app_data'])
-def handle_web_app_data(message):
-    user_report = message.web_app_data.data
-    bot.send_message(
-        message.chat.id,
-        f"📊 **Результаты вашего расчета сохранены в историю чата:**\n\n{user_report}"
-    )
 
-
-# 4. Живой парсинг золота и нефти Brent напрямую с Московской Биржи (MOEX)
-def get_moex_commodities():
-    try:
-        # Запрашиваем данные по рынку драгоценных металлов (валютный рынок MOEX)
-        url_gold = "https://moex.com"
-        response_gold = requests.get(url_gold, timeout=5)
-
-        # Запрашиваем данные по нефти Brent (индикативные курсы мировых товаров MOEX)
-        url_brent = "https://moex.com"
-        response_brent = requests.get(url_brent, timeout=5)
-
-        gold_price = None
-        brent_price = None
-
-        # Разбираем золото
-        if response_gold.status_code == 200:
-            data_gold = response_gold.json()["marketdata"]["data"]
-            if data_gold and len(data_gold) > 0:
-                gold_price = data_gold[0][1]  # Цена за 1 грамм в рублях
-
-        # Разбираем нефть
-        if response_brent.status_code == 200:
-            data_brent = response_brent.json()["marketdata"]["data"]
-            if data_brent and len(data_brent) > 0:
-                brent_price = data_brent[0][1]  # Цена за 1 баррель в USD
-
-        if gold_price or brent_price:
-            # Переводим золото в унции для профессиональной аналитики (1 унция = 31.1035 грамма)
-            gold_ounce = gold_price * 31.1035 if gold_price else 0
-
-            text = "🏆 **Котировки сырьевых товаров (MOEX):**\n\n"
-            if gold_price:
-                text += f"👑 **Золото (XAU):**\n"
-                text += f"▪️ 1 грамм = **{gold_price:.2f} RUB**\n"
-                text += f"▪️ 1 тройская унция = **{gold_ounce:.2f} RUB**\n\n"
-            if brent_price:
-                text += f"🛢 **Нефть Brent (OIL):**\n"
-                text += f"▪️ 1 баррель = **{brent_price:.2f} USD**\n\n"
-
-            text += "⚡️ _Данные обновлены в реальном времени напрямую из торговой системы MOEX._"
-            return text
-
-    except Exception as e:
-        print(f"Ошибка сырьевого модуля MOEX: {e}")
-
-    # Честное предупреждение при сбое сети
-    return (
-        "⚠️ **Сырьевой шлюз биржи недоступен**\n\n"
-        "Не удалось загрузить живые котировки золота и нефти.\n"
-        "🔧 **Решение:**\n"
-        "Убедитесь, что на вашем сервере **активен российский VPN**, так как Московская Биржа ограничивает запросы из внешних IP-диапазонов."
-    )
-
-
-# --- ОБРАБОТЧИК КОМАНДЫ /commodities ---
-@bot.message_handler(commands=['commodities'])
-def show_commodities(message):
-    if is_spam(message.chat.id): return
-    waiting_msg = bot.send_message(message.chat.id, "🔄 Опрашиваю сырьевые секции Московской Биржи...")
-    text = get_moex_commodities()
-    bot.delete_message(message.chat.id, waiting_msg.message_id)
-    bot.send_message(message.chat.id, text, parse_mode="Markdown")
-
-
+# КРИТИЧЕСКИ ВАЖНО: Универсальная заглушка на текст ВСЕГДА В САМОМ НИЗУ ХЕНДЛЕРОВ!
 @bot.message_handler(func=lambda message: True)
 def echo_all(message):
     if is_spam(message.chat.id): return
     bot.send_message(message.chat.id,
-                     "🤖 Я понимаю только команды из меню. Нажми кнопку <b>«Open»</b> для калькуляторов!",
+                     "🤖 Я понимаю только команды из меню. Нажмите кнопку **«Open»** для запуска калькуляторов!",
                      parse_mode="HTML")
 
 
 if __name__ == '__main__':
-    print("Чистая инвестиционная Pro-версия запущена...")
+    print("Инвестиционная Pro-версия со всеми шлюзами успешно запущена...")
     bot.infinity_polling()
+
+
