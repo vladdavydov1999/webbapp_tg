@@ -157,9 +157,10 @@ def send_welcome(message):
     
     markup = types.InlineKeyboardMarkup()
     
-    # КРИТИЧЕСКИ ВАЖНО: Мы убираем ручной адрес сайта! 
-    # Эта универсальная кнопка скажет Телеграму открыть ТО ЖЕ САМОЕ WebApp, что привязано к кнопке «Open»
-    btn_open = types.InlineKeyboardButton("🖥️ Открыть Инвест-Терминал", web_app=types.WebAppInfo(bot.get_user_profile_photos(message.from_user.id).photos[0][0].file_id if False else f"https://github.io{int(time.time())}"))
+    # Абсолютно прямая, чистая и стабильная ссылка на твой инвест-терминал
+    web_app_info = types.WebAppInfo("https://github.io")
+    
+    btn_open = types.InlineKeyboardButton("🖥️ Открыть Инвест-Терминал", web_app=web_app_info)
     markup.add(btn_open)
 
     welcome_text = (
