@@ -155,13 +155,15 @@ def get_moex_bonds():
 def send_welcome(message):
     if is_spam(message.chat.id): return
     
-    markup = types.InlineKeyboardMarkup()
+    # Создаем абсолютно новую клавиатуру
+    clean_markup = types.InlineKeyboardMarkup()
     
-    # Абсолютно прямая, чистая и стабильная ссылка на твой инвест-терминал
-    web_app_info = types.WebAppInfo("https://github.io")
+    # Прописываем чистый адрес твоего Web App с жестким сбросом кэша v=300
+    clean_web_app = types.WebAppInfo("https://github.io")
     
-    btn_open = types.InlineKeyboardButton("🖥️ Открыть Инвест-Терминал", web_app=web_app_info)
-    markup.add(btn_open)
+    # Привязываем полностью обновленный объект кнопки
+    btn_terminal = types.InlineKeyboardButton("🖥️ Открыть Инвест-Терминал", web_app=clean_web_app)
+    clean_markup.add(btn_terminal)
 
     welcome_text = (
         "🧠 **Инвестиционный Терминал & Финансовый Помощник Pro**\n\n"
@@ -177,8 +179,9 @@ def send_welcome(message):
         "/commodities — Спотовые цены на Золото и Нефть Brent\n\n"
         "👇 Для запуска интерактивных калькуляторов и симуляций нажмите кнопку ниже:"
     )
-    bot.send_message(message.chat.id, welcome_text, parse_mode="Markdown", reply_markup=markup)
+    bot.send_message(message.chat.id, welcome_text, parse_mode="Markdown", reply_markup=clean_markup)
 
+   
 
 
 
