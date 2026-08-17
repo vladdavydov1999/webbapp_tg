@@ -1,6 +1,7 @@
 import telebot
 import time
 import requests
+from telebot import types
 
 # Инициализируем бота
 TOKEN = 'TOKEN'
@@ -151,16 +152,24 @@ def get_moex_bonds():
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
     if is_spam(message.chat.id): return
+
+    # Создаем интерактивную инлайн-клавиатуру
+    markup = types.InlineKeyboardMarkup()
+    # КРИТИЧЕСКИ ВАЖНО: Привязываем ссылку на Web App к кнопке внутри чата!
+    web_app_info = types.WebAppInfo("https://github.io") # укажи свою актуальную версию
+    btn_open = types.InlineKeyboardButton("🚀 Открыть Калькулятор Про", web_app = web_app_info)
+    markup.add(btn_open)
+
     welcome_text = (
         "👋 <b>Привет! Я твой личный Финансовый Ассистент Pro.</b>\n\n"
-        "🚀 Нажми кнопку <b>«Open»</b> в углу экрана, чтобы открыть визуальный калькулятор!\n\n"
+        "Чтобы запустить продвинутый калькулятор и иметь возможность сохранять отчеты прямо в этот чат, "
+        "нажмите на кнопку <b>«Открыть Калькулятор Про»</b> ниже👇\n\n"
         "📖 <b>Команды финансовой аналитики:</b>\n"
         "/rates — Курсы мировых валют ЦБ\n"
         "/stocks — Котировки акций (MOEX)\n"
-        "/bonds — Доходность гособлигаций (ОФЗ)\n\n"
-        "🧮 <b>Теория:</b> /snowball | /compound | /safety_net"
+        "/bonds — Доходность гособлигаций (ОФЗ)"
     )
-    bot.send_message(message.chat.id, welcome_text, parse_mode="HTML")
+    bot.send_message(message.chat.id, welcome_text, parse_mode="HTML", reply_markup=markup)
 
 
 @bot.message_handler(commands=['rates'])
