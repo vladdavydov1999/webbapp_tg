@@ -156,7 +156,7 @@ def send_welcome(message):
     # Создаем интерактивную инлайн-клавиатуру
     markup = types.InlineKeyboardMarkup()
     # КРИТИЧЕСКИ ВАЖНО: Привязываем ссылку на Web App к кнопке внутри чата!
-    web_app_info = types.WebAppInfo("https://github.io") # укажи свою актуальную версию
+        web_app_info = types.WebAppInfo("https://github.io") # укажи свою актуальную версию
     btn_open = types.InlineKeyboardButton("🚀 Открыть Калькулятор Про", web_app = web_app_info)
     markup.add(btn_open)
 
