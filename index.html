@@ -24,7 +24,20 @@
             -webkit-tap-highlight-color: transparent;
         }
 
-        .container { max-width: 400px; margin: 0 auto; }
+        .container { max-width: 400px; margin: 0 auto; position: relative; }
+
+        /* Стильный переключатель языков в топе */
+        .lang-switcher {
+            position: absolute; top: -5px; right: 4px;
+            background: rgba(0, 0, 0, 0.05); padding: 4px; border-radius: 8px; display: flex; gap: 4px;
+        }
+        .lang-btn {
+            border: none; background: transparent; font-size: 11px; font-weight: 700;
+            padding: 4px 8px; border-radius: 6px; cursor: pointer; color: var(--text-color); opacity: 0.5;
+            transition: all 0.2s ease;
+        }
+        .lang-btn.active { background: var(--card-bg); opacity: 1; box-shadow: 0 2px 6px rgba(0,0,0,0.05); }
+
         h2 { text-align: center; font-size: 24px; font-weight: 700; margin: 10px 0 24px; }
 
         .tabs { display: flex; background: rgba(0, 0, 0, 0.04); padding: 4px; border-radius: 12px; margin-bottom: 24px; }
@@ -60,26 +73,32 @@
 <body>
 
 <div class="container">
-    <h2>📊 Фин-Терминал Pro</h2>
-
-    <div class="tabs">
-        <button id="btn1" class="tab-btn active" onclick="openTab('tab-compound', 'btn1')">📈 Портфель</button>
-        <button id="btn2" class="tab-btn" onclick="openTab('tab-debts', 'btn2')">📉 Долги</button>
-        <button id="btn3" class="tab-btn" onclick="openTab('tab-safety', 'btn3')">💰 Подушка</button>
+    <!-- Переключатель локализации -->
+    <div class="lang-switcher">
+        <button id="lang-ru" class="lang-btn active" onclick="setLanguage('ru')">RU</button>
+        <button id="lang-en" class="lang-btn" onclick="setLanguage('en')">EN</button>
     </div>
 
-    <!-- ВКЛАДКА 1: Профессиональный Расчет Активов -->
+    <h2 id="txt-title">📊 Фин-Терминал Pro</h2>
+
+    <div class="tabs">
+        <button id="btn1" class="tab-btn active" onclick="openTab('tab-compound', 'btn1')">📈 <span id="tab1-name">Портфель</span></button>
+        <button id="btn2" class="tab-btn" onclick="openTab('tab-debts', 'btn2')">📉 <span id="tab2-name">Долги</span></button>
+        <button id="btn3" class="tab-btn" onclick="openTab('tab-safety', 'btn3')">💰 <span id="tab3-name">Подушка</span></button>
+    </div>
+
+    <!-- ВКЛАДКА 1 -->
     <div id="tab-compound" class="tab-content" style="display: block;">
         <div class="card">
-            <label>Выберите базовый актив:</label>
+            <label id="lbl-asset">Выберите базовый актив:</label>
             <select id="assetType" onchange="updateAssetLabels()">
                 <option value="RUB">🇷🇺 Российский рубль (RUB)</option>
                 <option value="BYN">🇧🇾 Белорусский рубль (BYN)</option>
                 <option value="USD">🇺🇸 Доллар США (USD)</option>
                 <option value="EUR">🇪🇺 Евро (EUR)</option>
                 <option value="CNY">🇨🇳 Китайский юань (CNY)</option>
-                <option value="XAU">👑 Золото (Тройская унция)</option>
-                <option value="BRENT">🛢 Нефть (Баррель Brent)</option>
+                <option value="XAU" id="opt-gold">XAU Золото (Унция)</option>
+                <option value="BRENT" id="opt-oil">OIL Нефть Brent (Баррель)</option>
             </select>
 
             <label id="lblPrincipal">Стартовый капитал:</label>
@@ -88,95 +107,171 @@
             <label id="lblMonthly">Регулярное пополнение (в месяц):</label>
             <input type="number" id="monthly" value="100">
 
-            <label>Ожидаемый рост актива / доходность (% в год):</label>
+            <label id="lbl-rate">Ожидаемый рост актива (% в год):</label>
             <input type="number" id="rate" value="12">
 
-            <label>Срок удержания позиции (лет):</label>
+            <label id="lbl-years">Срок удержания позиции (лет):</label>
             <input type="number" id="years" value="5">
 
             <div style="border-top: 1px solid rgba(0,0,0,0.08); margin-top: 15px; padding-top: 15px;">
-                <label>Прогнозная инфляция по активу (% в год):</label>
+                <label id="lbl-inflation">Прогнозная инфляция по активу (% в год):</label>
                 <input type="number" id="inflation" value="4">
 
-                <label>Налоговая ставка на прибыль (%):</label>
+                <label id="lbl-tax">Налоговая ставка на прибыль (%):</label>
                 <select id="taxRate">
-                    <option value="0">0% (Льготный период / ИИС)</option>
-                    <option value="13" selected>13% (Стандартный налог)</option>
-                    <option value="15">15% (Повышенный налог)</option>
+                    <option value="0" id="opt-tax0">0% (Льготный период / ИИС)</option>
+                    <option value="13" id="opt-tax13" selected>13% (Стандартный налог)</option>
+                    <option value="15" id="opt-tax15">15% (Повышенный налог)</option>
                 </select>
             </div>
 
-            <button class="calc-btn" onclick="calcProAsset()">Рассчитать стратегию</button>
+            <button class="calc-btn" id="btn-calc1" onclick="calcProAsset()">Рассчитать стратегию</button>
             <div id="assetResult" class="result"></div>
         </div>
     </div>
 
-        <!-- ВКЛАДКА 2: Профессиональный Кредитный Анализ -->
-    <div id="tab-debts" class="tab-content" style="display: none;">
+    <!-- ВКЛАДКА 2 -->
+    <div id="tab-debts" class="tab-content">
         <div class="card">
-            <label>Название обязательства (кредита):</label>
-            <input type="text" id="debtName" placeholder="Например: Кредитка Сбер">
-
-            <label>Текущий остаток долга (руб):</label>
-            <input type="number" id="debtBalance" placeholder="50000">
-
-            <label>Процентная ставка (% в год):</label>
-            <input type="number" id="debtRate" placeholder="29.9" value="15">
-
-            <label>Минимальный ежемесячный платёж (руб):</label>
-            <input type="number" id="debtMin" placeholder="3000">
-
-            <button class="calc-btn btn-green" onclick="addProDebt()">➕ Внести кредит в реестр</button>
+            <label id="lbl-dname">Название обязательства (кредита):</label>
+            <input type="text" id="debtName" placeholder="Например: Кредитка">
+            <label id="lbl-dbal">Текущий остаток долга:</label>
+            <input type="number" id="debtBalance" placeholder="30000">
+            <label id="lbl-drate">Процентная ставка (% в год):</label>
+            <input type="number" id="debtRate" value="15">
+            <label id="lbl-dmin">Минимальный платёж:</label>
+            <input type="number" id="debtMin" placeholder="2000">
+            <button class="calc-btn btn-green" id="btn-adddebt" onclick="addProDebt()">➕ Внести кредит в реестр</button>
 
             <div id="addedDebtsBlock" style="margin-top: 20px; display: none;">
-                <label>Реестр активных обязательств:</label>
+                <label id="lbl-dregistry">Реестр активных обязательств:</label>
                 <div id="debtsList"></div>
             </div>
 
             <div style="border-top: 1px solid rgba(0,0,0,0.08); margin-top: 20px; padding-top: 15px;">
-                <label>Ежемесячный ускоритель досрочного гашения (руб):</label>
+                <label id="lbl-dextra">Ежемесячный ускоритель досрочного гашения:</label>
                 <input type="number" id="debtExtra" value="5000">
 
-                <label>Выберите стратегию оптимизации:</label>
+                <label id="lbl-dstrat">Выберите стратегию оптимизации:</label>
                 <select id="debtStrategy">
-                    <option value="avalanche" selected>⚡️ Кредитная Лавина (Экономия на процентах)</option>
-                    <option value="snowball">🚗 Снежный ком (Психологический комфорт)</option>
+                    <option value="avalanche" id="opt-avalanche" selected>⚡️ Кредитная Лавина (Экономия)</option>
+                    <option value="snowball" id="opt-snowball">🚗 Снежный ком (Комфорт)</option>
                 </select>
             </div>
 
-            <button class="calc-btn" onclick="calcProDebts()">🚗 Запустить симуляцию гашения</button>
+            <button class="calc-btn" id="btn-calc2" onclick="calcProDebts()">🚗 Запустить симуляцию</button>
             <div id="snowballResult" class="result"></div>
         </div>
     </div>
 
-
-        <!-- ВКЛАДКА 3: Профессиональный Риск-Менеджмент Подушки -->
-    <div id="tab-safety" class="tab-content" style="display: none;">
+    <!-- ВКЛАДКА 3 -->
+    <div id="tab-safety" class="tab-content">
         <div class="card">
-            <label>📊 Бюджет критических трат (в месяц, руб):</label>
-            <input type="number" id="expBase" value="30000" placeholder="Аренда/ипотека, базовая еда, ЖКХ, лекарства">
+            <label id="lbl-sbase">📊 Бюджет критических трат (в месяц):</label>
+            <input type="number" id="expBase" value="30000">
 
-            <label>🚗 Бюджет комфортных трат (в месяц, руб):</label>
-            <input type="number" id="expComfort" value="15000" placeholder="Транспорт, бензин, одежда, подписки, быт">
+            <label id="lbl-scomfort">🚗 Бюджет комфортных трат (в месяц):</label>
+            <input type="number" id="expComfort" value="15000">
 
-            <label>🌟 Бюджет избыточных трат (в месяц, руб):</label>
-            <input type="number" id="expPremium" value="10000" placeholder="Кафе, рестораны, кино, шопинг, хобби">
+            <label id="lbl-spremium">🌟 Бюджет избыточных трат (в месяц):</label>
+            <input type="number" id="expPremium" value="10000">
 
-            <label>🛡️ Требуемый горизонт безопасности (срок):</label>
+            <label id="lbl-shorizon">🛡️ Требуемый горизонт безопасности:</label>
             <select id="safetyPeriod">
-                <option value="3">3 месяца (Краткосрочный риск)</option>
-                <option value="6" selected>6 месяцев (Среднесрочный / Стабильный)</option>
-                <option value="12">12 месяцев (Максимальная защита капитала)</option>
+                <option value="3" id="opt-s3">3 месяца</option>
+                <option value="6" id="opt-s6" selected>6 месяцев</option>
+                <option value="12" id="opt-s12">12 месяцев</option>
             </select>
 
-            <button class="calc-btn" onclick="calcProSafetyNet()">💰 Рассчитать стресс-сценарий</button>
+            <button class="calc-btn" id="btn-calc3" onclick="calcProSafetyNet()">💰 Рассчитать стресс-сценарий</button>
             <div id="safetyResult" class="result"></div>
         </div>
     </div>
-
+</div>
 
 <script>
     var globalDebts = [];
+    var currentLang = 'ru';
+
+    // Словарь i18n для мгновенного переключения языков на фронтенде
+    var dictionary = {
+        ru: {
+            title: "📊 Фин-Терминал Pro", tab1: "Портфель", tab2: "Долги", tab3: "Подушка",
+            asset: "Выберите базовый актив:", rate: "Ожидаемый рост актива (% в год):",
+            years: "Срок удержания позиции (лет):", inflation: "Прогнозная инфляция по активу (% в год):",
+            tax: "Налоговая ставка на прибыль (%):", calc1: "Рассчитать стратегию",
+            tax0: "0% (Льготный период / ИИС)", tax13: "13% (Стандартный налог)", tax15: "15% (Повышенный налог)",
+            dname: "Название обязательства (кредита):", dbal: "Текущий остаток долга:", drate: "Процентная ставка (% в год):",
+            dmin: "Минимальный платёж:", adddebt: "➕ Внести кредит в реестр", dregistry: "Реестр активных обязательств:",
+            dextra: "Ежемесячный ускоритель досрочного гашения:", dstrat: "Выберите стратегию оптимизации:",
+            avalanche: "⚡️ Кредитная Лавина (Экономия)", snowball: "🚗 Снежный ком (Комфорт)", calc2: "🚗 Запустить симуляцию",
+            sbase: "📊 Бюджет критических трат (в месяц):", scomfort: "🚗 Бюджет комфортных трат (в месяц):",
+            spremium: "🌟 Бюджет избыточных трат (в месяц):", shorizon: "🛡️ Требуемый горизонт безопасности:",
+            s3: "3 месяца", s6: "6 месяцев", s12: "12 месяцев", calc3: "💰 Рассчитать стресс-сценарий",
+            gold: "XAU Золото (Унция)", oil: "OIL Нефть Brent (Баррель)"
+        },
+        en: {
+            title: "📊 Fin-Terminal Pro", tab1: "Portfolio", tab2: "Debts", tab3: "Safety Net",
+            asset: "Select base asset:", rate: "Expected asset growth (% per year):",
+            years: "Holding period (years):", inflation: "Expected inflation (% per year):",
+            tax: "Tax rate on profit (%):", calc1: "Calculate Strategy",
+            tax0: "0% (Tax-free / ISA)", tax13: "13% (Standard Tax)", tax15: "15% (High Income Tax)",
+            dname: "Debt title (credit):", dbal: "Current outstanding balance:", drate: "Interest rate (% per year):",
+            dmin: "Minimum monthly payment:", adddebt: "➕ Add Credit to Registry", dregistry: "Active Debt Registry:",
+            dextra: "Monthly extra payoff accelerator:", dstrat: "Select optimization strategy:",
+            avalanche: "⚡️ Debt Avalanche (Save %)", snowball: "🚗 Debt Snowball (Comfort)", calc2: "🚗 Run Simulation",
+            sbase: "📊 Critical expenses budget (monthly):", scomfort: "🚗 Comfort expenses budget (monthly):",
+            spremium: "🌟 Premium expenses budget (monthly):", shorizon: "🛡️ Required safety horizon:",
+            s3: "3 months", s6: "6 months", s12: "12 months", calc3: "💰 Calculate Stress Scenario",
+            gold: "XAU Gold (Ounce)", oil: "OIL Brent Crude (Barrel)"
+        }
+    };
+
+    function setLanguage(lang) {
+        currentLang = lang;
+        document.getElementById('lang-ru').className = lang === 'ru' ? 'lang-btn active' : 'lang-btn';
+        document.getElementById('lang-en').className = lang === 'en' ? 'lang-btn active' : 'lang-btn';
+
+        var d = dictionary[lang];
+        document.getElementById('txt-title').innerText = d.title;
+        document.getElementById('tab1-name').innerText = d.tab1;
+        document.getElementById('tab2-name').innerText = d.tab2;
+        document.getElementById('tab3-name').innerText = d.tab3;
+        document.getElementById('lbl-asset').innerText = d.asset;
+        document.getElementById('lbl-rate').innerText = d.rate;
+        document.getElementById('lbl-years').innerText = d.years;
+        document.getElementById('lbl-inflation').innerText = d.inflation;
+        document.getElementById('lbl-tax').innerText = d.tax;
+        document.getElementById('btn-calc1').innerText = d.calc1;
+        document.getElementById('opt-tax0').innerText = d.tax0;
+        document.getElementById('opt-tax13').innerText = d.tax13;
+        document.getElementById('opt-tax15').innerText = d.tax15;
+        document.getElementById('opt-gold').innerText = d.gold;
+        document.getElementById('opt-oil').innerText = d.oil;
+
+        document.getElementById('lbl-dname').innerText = d.dname;
+        document.getElementById('lbl-dbal').innerText = d.dbal;
+        document.getElementById('lbl-drate').innerText = d.drate;
+        document.getElementById('lbl-dmin').innerText = d.dmin;
+        document.getElementById('btn-adddebt').innerText = d.adddebt;
+        document.getElementById('lbl-dregistry').innerText = d.dregistry;
+        document.getElementById('lbl-dextra').innerText = d.dextra;
+        document.getElementById('lbl-dstrat').innerText = d.dstrat;
+        document.getElementById('opt-avalanche').innerText = d.avalanche;
+        document.getElementById('opt-snowball').innerText = d.snowball;
+        document.getElementById('btn-calc2').innerText = d.calc2;
+
+        document.getElementById('lbl-sbase').innerText = d.sbase;
+        document.getElementById('lbl-scomfort').innerText = d.scomfort;
+        document.getElementById('lbl-spremium').innerText = d.spremium;
+        document.getElementById('lbl-shorizon').innerText = d.shorizon;
+        document.getElementById('opt-s3').innerText = d.s3;
+        document.getElementById('opt-s6').innerText = d.s6;
+        document.getElementById('opt-s12').innerText = d.s12;
+        document.getElementById('btn-calc3').innerText = d.calc3;
+
+        updateAssetLabels();
+    }
 
     function openTab(tabId, btnId) {
         document.getElementById('tab-compound').style.display = 'none';
@@ -188,33 +283,25 @@
         document.getElementById('btn2').className = 'tab-btn';
         document.getElementById('btn3').className = 'tab-btn';
         document.getElementById(btnId).className = 'tab-btn active';
-        if (document.activeElement) { document.activeElement.blur(); }
     }
 
-    // Динамическое изменение подписей в зависимости от золота/нефти/валюты
     function updateAssetLabels() {
         var asset = document.getElementById('assetType').value;
         var p = document.getElementById('lblPrincipal');
         var m = document.getElementById('lblMonthly');
         var inf = document.getElementById('inflation');
 
-        if (asset === "XAU") {
-            p.innerText = "Стартовый объем (Тройские унции):";
-            m.innerText = "Ежемесячная закупка (Унций):";
-            inf.value = "2"; // У золота историческая инфляция ниже
-        } else if (asset === "BRENT") {
-            p.innerText = "Стартовый объем (Баррели):";
-            m.innerText = "Ежемесячная закупка (Баррелей):";
-            inf.value = "3";
+        if (currentLang === 'ru') {
+            if (asset === "XAU") { p.innerText = "Стартовый объем (Унции):"; m.innerText = "Ежемесячная закупка (Унций):"; inf.value = "2"; }
+            else if (asset === "BRENT") { p.innerText = "Стартовый объем (Баррели):"; m.innerText = "Ежемесячная закупка (Баррелей):"; inf.value = "3"; }
+            else { p.innerText = "Стартовый капитал (" + asset + "):"; m.innerText = "Ежемесячное пополнение (" + asset + "):"; inf.value = (asset==="USD"||asset==="EUR") ? "3" : "6"; }
         } else {
-            p.innerText = "Стартовый капитал (" + asset + "):";
-            m.innerText = "Ежемесячное пополнение (" + asset + "):";
-            if(asset === "USD" || asset === "EUR") { inf.value = "3"; }
-            else { inf.value = "6"; }
+            if (asset === "XAU") { p.innerText = "Starting Volume (Ounces):"; m.innerText = "Monthly Purchase (Ounces):"; inf.value = "2"; }
+            else if (asset === "BRENT") { p.innerText = "Starting Volume (Barrels):"; m.innerText = "Monthly Purchase (Barrels):"; inf.value = "3"; }
+            else { p.innerText = "Starting Capital (" + asset + "):"; m.innerText = "Monthly Deposit (" + asset + "):"; inf.value = (asset==="USD"||asset==="EUR") ? "3" : "6"; }
         }
     }
 
-    // Профессиональный расчет макроэкономического портфеля
     function calcProAsset() {
         var asset = document.getElementById('assetType').value;
         var p = parseFloat(document.getElementById('principal').value) || 0;
@@ -223,16 +310,11 @@
         var years = parseInt(document.getElementById('years').value) || 0;
         var inflationRate = (parseFloat(document.getElementById('inflation').value) || 0) / 100;
         var taxRate = (parseFloat(document.getElementById('taxRate').value) || 0) / 100;
-
         var months = years * 12;
 
-        // Математическая модель Фишера для расчета реальной доходности актива
         var realRateMonthly = ((1 + nominalRate) / (1 + inflationRate) - 1) / 12;
         var nominalRateMonthly = nominalRate / 12;
-
-                var nominalTotal = p;
-        var realTotal = p;
-        var totalInvested = p;
+        var nominalTotal = p, realTotal = p, totalInvested = p;
 
         for (var i = 0; i < months; i++) {
             nominalTotal = nominalTotal * (1 + nominalRateMonthly) + m;
@@ -243,195 +325,104 @@
         var profit = nominalTotal - totalInvested;
         var taxValue = profit > 0 ? profit * taxRate : 0;
         var totalAfterTax = nominalTotal - taxValue;
-
-        var sign = asset;
-        if(asset === "XAU") sign = "унций";
-        if(asset === "BRENT") sign = "барр.";
+        var sign = asset === "XAU" ? (currentLang==='ru'?"унций":"oz") : (asset === "BRENT" ? (currentLang==='ru'?"барр.":"bbl") : asset);
 
         var resDiv = document.getElementById('assetResult');
         resDiv.style.display = 'block';
-        resDiv.innerHTML =
-            '📊 <b>Номинальный объем позиции:</b><br>' +
-            '• Итого на балансе: <b>' + Math.round(nominalTotal).toLocaleString('ru-RU') + ' ' + sign + '</b><br>' +
-            '• Налог на прирост стоимости: <span style="color: #e74c3c;">-' + Math.round(taxValue).toLocaleString('ru-RU') + ' ' + sign + '</span><br>' +
-            '• Чистый объем за вычетом налога: <b>' + Math.round(totalAfterTax).toLocaleString('ru-RU') + ' ' + sign + '</b><br><br>' +
-            '📉 **Реальная ценность (с учетом инфляции):**<br>' +
-            '• Очищенный от инфляции объем: <span style="color: #2ecc71; font-weight: bold;">' + Math.round(realTotal).toLocaleString('ru-RU') + ' ' + sign + '</span><br>' +
-            '▪️ _Показывает физическую покупательскую способность вашего актива через ' + years + ' лет._<br><br>' +
-            '📥 Физически закуплено вами: ' + Math.round(totalInvested).toLocaleString('ru-RU') + ' ' + sign;
+
+        if (currentLang === 'ru') {
+            resDiv.innerHTML = '📊 <b>Номинальный объем позиции:</b><br>• Итого на балансе: <b>' + Math.round(nominalTotal).toLocaleString() + ' ' + sign + '</b><br>• Налог на прирост: <span style="color: #e74c3c;">-' + Math.round(taxValue).toLocaleString() + '</span><br>• Чистый баланс: <b>' + Math.round(totalAfterTax).toLocaleString() + ' ' + sign + '</b><br><br>📉 <b>Реальная ценность (с учетом инфляции):</b><br>• С учетом инфляции: <span style="color: #2ecc71; font-weight: bold;">' + Math.round(realTotal).toLocaleString() + ' ' + sign + '</span><br><br>📥 Ваши личные вложения: ' + Math.round(totalInvested).toLocaleString();
+        } else {
+            resDiv.innerHTML = '📊 <b>Nominal Position Volume:</b><br>• Total Balance: <b>' + Math.round(nominalTotal).toLocaleString() + ' ' + sign + '</b><br>• Capital Gains Tax: <span style="color: #e74c3c;">-' + Math.round(taxValue).toLocaleString() + '</span><br>• Net Balance: <b>' + Math.round(totalAfterTax).toLocaleString() + ' ' + sign + '</b><br><br>📉 <b>Real Value (Inflation Adjusted):</b><br>• Real Value: <span style="color: #2ecc71; font-weight: bold;">' + Math.round(realTotal).toLocaleString() + ' ' + sign + '</span><br><br>📥 Total Invested by You: ' + Math.round(totalInvested).toLocaleString();
+        }
     }
 
-        // Профессиональное добавление кредита с учетом процентной ставки
     function addProDebt() {
-        var name = document.getElementById('debtName').value.trim();
+            var name = document.getElementById('debtName').value.trim();
         var balance = parseFloat(document.getElementById('debtBalance').value);
         var rate = parseFloat(document.getElementById('debtRate').value);
         var min = parseFloat(document.getElementById('debtMin').value);
+        if (!name || isNaN(balance) || isNaN(rate) || isNaN(min)) { alert("Fill all fields!"); return; }
 
-        if (!name || isNaN(balance) || isNaN(rate) || isNaN(min)) {
-            alert("Пожалуйста, заполните все поля кредита числовыми значениями!");
-            return;
-        }
-
-        // Сохраняем в глобальный массив
         globalDebts.push({ name: name, balance: balance, rate: rate, min_payment: min });
-
         var listDiv = document.getElementById('debtsList');
         document.getElementById('addedDebtsBlock').style.display = 'block';
-        listDiv.innerHTML += '<div class="debt-item">📌 <b>' + name + '</b>: ' + balance.toLocaleString('ru-RU') + ' руб. (Ставка: ' + rate + '%, Мин. платёж: ' + min + ' руб.)</div>';
-
-        // Очищаем поля ввода
-        document.getElementById('debtName').value = '';
-        document.getElementById('debtBalance').value = '';
-        document.getElementById('debtRate').value = '15';
-        document.getElementById('debtMin').value = '';
-        if (document.activeElement) { document.activeElement.blur(); }
+        listDiv.innerHTML += '<div class="debt-item">📌 <b>' + name + '</b>: ' + balance.toLocaleString() + ' (Rate: ' + rate + '%, Min: ' + min + ')</div>';
+        document.getElementById('debtName').value = ''; document.getElementById('debtBalance').value = ''; document.getElementById('debtMin').value = '';
     }
 
-    // Симуляция кредитного гашения: Лавина против Снежного кома
     function calcProDebts() {
-        if (globalDebts.length === 0) { alert("Реестр обязательств пуст! Сначала добавьте хотя бы один кредит."); return; }
-
+        if (globalDebts.length === 0) { alert("Registry is empty!"); return; }
         var extra = parseFloat(document.getElementById('debtExtra').value) || 0;
         var strategy = document.getElementById('debtStrategy').value;
+        var calcDebts = globalDebts.map(function(d) { return { name: d.name, balance: d.balance, rate: d.rate, min_payment: d.min_payment, closedIn: 0 }; });
 
-        // Глубокое копирование массива долгов для расчетов
-        var calcDebts = globalDebts.map(function(d) {
-            return { name: d.name, balance: d.balance, rate: d.rate, min_payment: d.min_payment, closedIn: 0 };
-        });
-
-        var months = 0;
-        var totalInterestsPaid = 0; // Счетчик чистой переплаты по процентам банкам
-        var active = true;
-
-        // Эмуляция жизни бюджета по месяцам (ограничение 20 лет, чтобы не уйти в вечный цикл при нехватке денег)
+        var months = 0, totalInterestsPaid = 0, active = true;
         while (active && months < 240) {
-            months++;
-            var currentExtraPool = extra;
-            var anyLeft = false;
-
-            // 1. НАЧИСЛЕНИЕ БАНКОВСКИХ ПРОЦЕНТОВ за текущий месяц на остаток долга
+            months++; var currentExtraPool = extra, anyLeft = false;
             for (var i = 0; i < calcDebts.length; i++) {
                 if (calcDebts[i].balance > 0) {
                     var monthlyInterest = calcDebts[i].balance * ((calcDebts[i].rate / 100) / 12);
-                    calcDebts[i].balance += monthlyInterest;
-                    totalInterestsPaid += monthlyInterest; // Фиксируем убытки инвестора
+                    calcDebts[i].balance += monthlyInterest; totalInterestsPaid += monthlyInterest;
                 }
             }
-
-            // 2. ВЫЧЕТ МИНИМАЛЬНЫХ ПЛАТЕЖЕЙ (Обязательная программа, чтобы не было просрочек)
             for (var j = 0; j < calcDebts.length; j++) {
                 if (calcDebts[j].balance > 0) {
                     var actualMin = Math.min(calcDebts[j].min_payment, calcDebts[j].balance);
                     calcDebts[j].balance -= actualMin;
-
-                    // Если минимальный платеж перекрыл долг с запасом, остаток денег возвращается в пул досрочного гашения
-                    if (actualMin > calcDebts[j].balance && calcDebts[j].balance === 0) {
-                        currentExtraPool += (actualMin - calcDebts[j].balance);
-                    }
+                    if (actualMin > calcDebts[j].balance && calcDebts[j].balance === 0) { currentExtraPool += (actualMin - calcDebts[j].balance); }
                 }
             }
-
-            // 3. СОРТИРОВКА ДЛЯ ДОСРОЧНОГО ГАШЕНИЯ (Суть стратегий)
-            if (strategy === "avalanche") {
-                // Лавина: сортируем по УБЫВАНИЮ процентной ставки (бьем самый дорогой кредит)
-                calcDebts.sort(function(a, b) { return b.rate - a.rate; });
-            } else {
-                // Снежный ком: сортируем по ВОЗРАСТАНИЮ остатка долга (бьем самый маленький кредит)
-                calcDebts.sort(function(a, b) { return a.balance - b.balance; });
-            }
-
-            // 4. НАПРАВЛЕНИЕ СВОБОДНЫХ ДЕНЕГ (Ускорителя) на приоритетный кредит
+            if (strategy === "avalanche") { calcDebts.sort(function(a, b) { return b.rate - a.rate; }); }
+            else { calcDebts.sort(function(a, b) { return a.balance - b.balance; }); }
             for (var k = 0; k < calcDebts.length; k++) {
                 if (calcDebts[k].balance > 0) {
                     var payOff = Math.min(currentExtraPool, calcDebts[k].balance);
-                    calcDebts[k].balance -= payOff;
-                    currentExtraPool -= payOff;
-                    if (currentExtraPool <= 0) break; // Весь свободный кэш на этот месяц исчерпан
+                    calcDebts[k].balance -= payOff; currentExtraPool -= payOff;
+                    if (currentExtraPool <= 0) break;
                 }
             }
-
-            // 5. ФИКСАЦИЯ СРОКОВ ЗАКРЫТИЯ позиций
             for (var m = 0; m < calcDebts.length; m++) {
-                if (calcDebts[m].balance <= 0 && calcDebts[m].closedIn === 0) {
-                    calcDebts[m].closedIn = months;
-                }
-                if (calcDebts[m].balance > 0) {
-                    anyLeft = true; // Хотя бы один кредит еще активен
-                }
+                if (calcDebts[m].balance <= 0 && calcDebts[m].closedIn === 0) { calcDebts[m].closedIn = months; }
+                if (calcDebts[m].balance > 0) { anyLeft = true; }
             }
-
-            // Если все балансы обнулились — останавливаем эмуляцию
             if (!anyLeft) { active = false; }
         }
 
-        // Выводим профессиональное заключение
-        var resDiv = document.getElementById('snowballResult');
-        resDiv.style.display = 'block';
-
-        var stratName = strategy === "avalanche" ? "Кредитная Лавина" : "Снежный ком";
-        var html = '📊 <b>Анализ долговой нагрузки (Модель: ' + stratName + '):</b><br><br>';
-
-        for (var n = 0; n < calcDebts.length; n++) {
-            html += (n+1) + '. <b>' + calcDebts[n].name + '</b> — ликвидация через: <b>' + calcDebts[n].closedIn + '</b> мес.<br>';
+        var resDiv = document.getElementById('snowballResult'); resDiv.style.display = 'block';
+        if (currentLang === 'ru') {
+            var html = '<b>📊 Анализ кредитной нагрузки:</b><br><br>';
+            for (var n = 0; n < calcDebts.length; n++) { html += (n+1) + '. <b>' + calcDebts[n].name + '</b> — через: <b>' + calcDebts[n].closedIn + '</b> мес.<br>'; }
+            html += '<br>🚨 Потери на процентах: <span style="color: #e74c3c;">' + Math.round(totalInterestsPaid).toLocaleString() + ' руб.</span><br>🎉 Полная свобода через: <b>' + months + ' мес.</b>';
+            resDiv.innerHTML = html;
+        } else {
+            var html = '<b>📊 Debt Load Analysis:</b><br><br>';
+            for (var n = 0; n < calcDebts.length; n++) { html += (n+1) + '. <b>' + calcDebts[n].name + '</b> — cleared in: <b>' + calcDebts[n].closedIn + '</b> months.<br>'; }
+            html += '<br>🚨 Total Interest Loss: <span style="color: #e74c3c;">' + Math.round(totalInterestsPaid).toLocaleString() + '</span><br>🎉 Debt Free in: <b>' + months + ' months</b>';
+            resDiv.innerHTML = html;
         }
-
-        html += '<br>🚨 <b>Общие потери на процентах банков:</b> <span style="color: #e74c3c; font-weight: 600;">' + Math.round(totalInterestsPaid).toLocaleString('ru-RU') + ' руб.</span><br>';
-        html += '🎉 <b>Полное освобождение от кредитного бремени: <span style="color: #2ecc71; font-weight: bold;">' + months + ' мес.</span></b>';
-
-        if (months >= 240) {
-            html += '<br><br>⚠️ <span style="color: #e67e22;"><b>Внимание:</b> Ваших минимальных платежей и ускорителя недостаточно для перекрытия набегающих процентов на горизонте 20 лет. Увеличьте ежемесячный ускоритель!</span>';
-        }
-
-        resDiv.innerHTML = html;
-        if (document.activeElement) { document.activeElement.blur(); }
     }
 
-
-        // Профессиональный расчет финансового резерва и диверсификации
     function calcProSafetyNet() {
         var base = parseFloat(document.getElementById('expBase').value) || 0;
         var comfort = parseFloat(document.getElementById('expComfort').value) || 0;
         var premium = parseFloat(document.getElementById('expPremium').value) || 0;
         var period = parseInt(document.getElementById('safetyPeriod').value) || 6;
 
-        // Расчет двух сценариев
-        // 1. Стабильный сценарий (сохранение текущего уровня жизни со всеми расходами)
         var totalComfortStyle = (base + comfort + premium) * period;
-
-        // 2. Антикризисный сценарий выживания (Premium-траты убираются полностью, Comfort урезается на 50%)
         var survivalMonthly = base + (comfort * 0.5);
         var totalSurvivalStyle = survivalMonthly * period;
 
-        // Распределение капитала по классам ликвидности для защиты от инфляции
-        // 20% — Высокая ликвидность (Кеш / текущий счет для мгновенного доступа)
-        var cashAllocation = totalComfortStyle * 0.20;
-        // 50% — Средняя ликвидность (Накопительный счет с ежедневным начислением % под шаг ЦБ)
-        var bankAllocation = totalComfortStyle * 0.50;
-        // 30% — Низкая ликвидность (Парковка в краткосрочные гособлигации ОФЗ, фиксирующие высокий доход)
-        var bondsAllocation = totalComfortStyle * 0.30;
-
-        var resDiv = document.getElementById('safetyResult');
-        resDiv.style.display = 'block';
-        resDiv.innerHTML =
-            '🛡️ <b>Моделирование Резервного Фонда:</b><br><br>' +
-            '🟢 <b>Сценарий «Комфорт» (Сохранение стиля жизни):</b><br>' +
-            '• Требуемый капитал на ' + period + ' мес: <b>' + Math.round(totalComfortStyle).toLocaleString('ru-RU') + ' руб.</b><br>' +
-            '• Средний чек трат в месяц: ' + Math.round(base + comfort + premium).toLocaleString('ru-RU') + ' руб.<br><br>' +
-            '⚠️ <b>Сценарий «Выживание» (Антикризисный план):</b><br>' +
-            '• Минимальный щит на ' + period + ' мес: <b>' + Math.round(totalSurvivalStyle).toLocaleString('ru-RU') + ' руб.</b><br>' +
-            '• Лимит трат в месяц: ' + Math.round(survivalMonthly).toLocaleString('ru-RU') + ' руб. (Урезаны развлечения и 50% быта).<br><br>' +
-            '🏛 <b>Профессиональное распределение резерва (Ликвидность):</b><br>' +
-            '• <b>💵 Наличные/Кеш (20%):</b> ' + Math.round(cashAllocation).toLocaleString('ru-RU') + ' руб. (Доступ за 1 секунду).<br>' +
-            '• <b>🏦 Накопительный счет (50%):</b> ' + Math.round(bankAllocation).toLocaleString('ru-RU') + ' руб. (Снятие за 1 день без потери %).<br>' +
-            '• <b>🎫 Гособлигации ОФЗ (30%):</b> ' + Math.round(bondsAllocation).toLocaleString('ru-RU') + ' руб. (Парковка под фиксированный купон).';
-
-        if (document.activeElement) { document.activeElement.blur(); }
+        var resDiv = document.getElementById('safetyResult'); resDiv.style.display = 'block';
+        if (currentLang === 'ru') {
+            resDiv.innerHTML = '🛡️ <b>Моделирование Резервного Фонда:</b><br><br>🟢 <b>Сценарий «Комфорт»:</b> <b>' + Math.round(totalComfortStyle).toLocaleString() + ' руб.</b><br>⚠️ <b>Сценарий «Выживание»:</b> <b>' + Math.round(totalSurvivalStyle).toLocaleString() + ' руб.</b><br><br>🏛 <b>Ликвидность резерва (20%/50%/30%):</b><br>• Кеш: ' + Math.round(totalComfortStyle*0.2).toLocaleString() + ' руб.<br>• Вклад: ' + Math.round(totalComfortStyle*0.5).toLocaleString() + ' руб.<br>• ОФЗ: ' + Math.round(totalComfortStyle*0.3).toLocaleString() + ' руб.';
+        } else {
+            resDiv.innerHTML = '🛡️ <b>Emergency Fund Modeling:</b><br><br>🟢 <b>Comfort Scenario:</b> <b>' + Math.round(totalComfortStyle).toLocaleString() + '</b><br>⚠️ <b>Survival Scenario:</b> <b>' + Math.round(totalSurvivalStyle).toLocaleString() + '</b><br><br>🏛 <b>Liquidity Distribution (20%/50%/30%):</b><br>• Cash: ' + Math.round(totalComfortStyle*0.2).toLocaleString() + '<br>• Bank: ' + Math.round(totalComfortStyle*0.5).toLocaleString() + '<br>• Bonds: ' + Math.round(totalComfortStyle*0.3).toLocaleString();
+        }
     }
-
-
 </script>
 </div>
 </body>
 </html>
+
 
