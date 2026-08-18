@@ -26,16 +26,40 @@
 
         .container { max-width: 400px; margin: 0 auto; position: relative; }
 
-        /* Стильный переключатель языков в топе */
+                /* Нативный, красивый блок переключателя */
+        .lang-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
         .lang-switcher {
-            position: absolute; top: -5px; right: 4px;
-            background: rgba(0, 0, 0, 0.05); padding: 4px; border-radius: 8px; display: flex; gap: 4px;
+            background: rgba(0, 0, 0, 0.05);
+            padding: 3px;
+            border-radius: 8px;
+            display: inline-flex;
+            gap: 2px;
         }
+
         .lang-btn {
-            border: none; background: transparent; font-size: 11px; font-weight: 700;
-            padding: 4px 8px; border-radius: 6px; cursor: pointer; color: var(--text-color); opacity: 0.5;
-            transition: all 0.2s ease;
+            border: none;
+            background: transparent;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 6px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            color: var(--text-color);
+            opacity: 0.5;
+            transition: all 0.15s ease;
         }
+
+        .lang-btn.active {
+            background: var(--card-bg);
+            opacity: 1;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+        }
+
         .lang-btn.active { background: var(--card-bg); opacity: 1; box-shadow: 0 2px 6px rgba(0,0,0,0.05); }
 
         h2 { text-align: center; font-size: 24px; font-weight: 700; margin: 10px 0 24px; }
@@ -73,13 +97,19 @@
 <body>
 
 <div class="container">
-    <!-- Переключатель локализации -->
-    <div class="lang-switcher">
-        <button id="lang-ru" class="lang-btn active" onclick="setLanguage('ru')">RU</button>
-        <button id="lang-en" class="lang-btn" onclick="setLanguage('en')">EN</button>
+    <!-- Заголовок теперь свободен и центрирован -->
+    <h2 id="txt-title">📊 Фин-Терминал Pro</h2>
+
+    <!-- Переключатель языков аккуратно встанет строго под ним -->
+    <div class="lang-container">
+        <div class="lang-switcher">
+            <button id="lang-ru" class="lang-btn active" onclick="setLanguage('ru')">RU</button>
+            <button id="lang-en" class="lang-btn" onclick="setLanguage('en')">EN</button>
+        </div>
     </div>
 
-    <h2 id="txt-title">📊 Фин-Терминал Pro</h2>
+    <!-- Дальше идут вкладки Портфель, Долги... -->
+
 
     <div class="tabs">
         <button id="btn1" class="tab-btn active" onclick="openTab('tab-compound', 'btn1')">📈 <span id="tab1-name">Портфель</span></button>
