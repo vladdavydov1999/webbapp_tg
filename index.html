@@ -338,17 +338,108 @@
         updateAssetLabels();
     }
 
+        // 1. ИСПРАВЛЕННАЯ ФУНКЦИЯ ПЕРЕКЛЮЧЕНИЯ (Теперь поддерживает 4 кнопки)
     function openTab(tabId, btnId) {
         document.getElementById('tab-compound').style.display = 'none';
         document.getElementById('tab-debts').style.display = 'none';
         document.getElementById('tab-safety').style.display = 'none';
+        document.getElementById('tab-realty').style.display = 'none'; // Скрываем ипотеку
         document.getElementById(tabId).style.display = 'block';
 
         document.getElementById('btn1').className = 'tab-btn';
         document.getElementById('btn2').className = 'tab-btn';
         document.getElementById('btn3').className = 'tab-btn';
-        document.getElementById(btnId).className = 'tab-btn active';
+        document.getElementById('btn4').className = 'tab-btn'; // Сбрасываем 4-ю кнопку
+        document.getElementById(btnId).className = 'tab-btn active'; // Делаем активной нужную
+
+        if (document.activeElement) { document.activeElement.blur(); }
     }
+
+    // 2. ПРОФЕССИОНАЛЬНАЯ ФОРМУЛА: ИПОТЕКА ПРОТИВ АРЕНДЫ + ИНВЕСТИЦИЙ
+    function calcRealtyBattle() {
+        var cost = parseFloat(document.getElementById('propCost').value) || 0;
+        var downPay = parseFloat(document.getElementById('downPayment').value) || 0;
+        var mortRate = (parseFloat(document.getElementById('mortRate').value) || 0) / 100;
+        var years = parseInt(document.getElementById('mortYears').value) || 0;
+
+        var rent = parseFloat(document.getElementById('rentCost').value) || 0;
+        var rentInf = (parseFloat(document.getElementById('rentInflation').value) || 0) / 100;
+        var invYield = (parseFloat(document.getElementById('invYield').value) || 0) / 100;
+
+        var months = years * 12;
+        var loanAmount = cost - downPay; // Тело кредита
+
+        // Расчет ежемесячного аннуитетного платежа по банковской формуле
+        var monthlyRate = mortRate / 12;
+        var mortgagePayment = 0;
+        if (loanAmount > 0 && monthlyRate > 0) {
+            mortgagePayment = loanAmount * (monthlyRate * Math.pow(1 + monthlyRate, months)) / (Math.pow(1 + monthlyRate, months) - 1);
+        }
+
+        // --- МОДЕЛИРОВАНИЕ СЦЕНАРИЯ 1: ИПОТЕКА ---
+        // Через N лет у инвестора будет квартира, но он выплатит кучу процентов
+        var totalMortgagePaid = mortgagePayment * months;
+        var interestOverpayment = totalMortgagePaid - loanAmount;
+
+        // --- МОДЕЛИРОВАНИЕ СЦЕНАРИЯ 2: АРЕНДА + ИНВЕСТ ---
+        // Первоначальный взнос сразу уходит работать под сложный процент
+        var portfolio = downPay;
+        var currentRent = rent;
+        var totalRentPaid = 0;
+
+        for (var m = 1; m <= months; m++) {
+            // Каждые 12 месяцев аренда растет на величину инфляции
+            if (m % 12 === 0) {
+                currentRent = currentRent * (1 + rentInf);
+            }
+            totalRentPaid += currentRent;
+
+            // Разница между ипотечным платежом и арендой уходит в инвестиции
+            var savings = mortgagePayment - currentRent;
+
+            // Начисляем ежемесячный процент на инвестиционный портфель
+            portfolio = portfolio * (1 + (invYield / 12));
+            if (savings > 0) {
+                portfolio += savings;
+            }
+        }
+
+        // Выводим глубокое финансовое заключение
+        var resDiv = document.getElementById('realtyResult');
+        resDiv.style.display = 'block';
+
+        if (currentLang === 'ru') {
+            var verdict = portfolio > cost ?
+                '<span style="color: #2ecc71; font-weight: bold;">🏢 Стратегия Аренды выгоднее!</span> Накопленный капитал превышает стоимость квартиры.' :
+                '<span style="color: #2481cc; font-weight: bold;">🏠 Стратегия Ипотеки выгоднее!</span> Своя недвижимость защитила капитал лучше рынка.';
+
+            resDiv.innerHTML =
+                '<b>🏦 Сценарий «Ипотека» за ' + years + ' лет:</b><br>' +
+                '• Ежемесячный платеж банкирам: <b>' + Math.round(mortgagePayment).toLocaleString() + ' руб.</b><br>' +
+                '• Всего выплатите банку: ' + Math.round(totalMortgagePaid).toLocaleString() + ' руб.<br>' +
+                '• Из них чистая переплата по %: <span style="color: #e74c3c;">' + Math.round(interestOverpayment).toLocaleString() + ' руб.</span><br><br>' +
+                '<b>📈 Сценарий «Аренда и Инвестиции»:</b><br>' +
+                '• Капитал в акциях/золоте/ОФЗ: <b>' + Math.round(portfolio).toLocaleString() + ' руб.</b><br>' +
+                '• Суммарно отдадите за аренду: ' + Math.round(totalRentPaid).toLocaleString() + ' руб.<br><br>' +
+                '🏁 <b>Вердикт финансиста:</b><br>' + verdict;
+        } else {
+            var verdict = portfolio > cost ?
+                '<span style="color: #2ecc71; font-weight: bold;">🏢 Rent & Invest wins!</span> Your capital grows larger than property value.' :
+                '<span style="color: #2481cc; font-weight: bold;">🏠 Mortgage wins!</span> Property equity outperformed the investment strategy.';
+
+            resDiv.innerHTML =
+                '<b>🏦 Mortgage Scenario (' + years + ' years):</b><br>' +
+                '• Monthly Bank Payment: <b>' + Math.round(mortgagePayment).toLocaleString() + ' rub.</b><br>' +
+                '• Total Paid to Bank: ' + Math.round(totalMortgagePaid).toLocaleString() + ' rub.<br>' +
+                '• Interest Overpayment: <span style="color: #e74c3c;">' + Math.round(interestOverpayment).toLocaleString() + ' rub.</span><br><br>' +
+                '<b>📈 Rent & Invest Scenario:</b><br>' +
+                '• Accumulated Invest Portfolio: <b>' + Math.round(portfolio).toLocaleString() + ' rub.</b><br>' +
+                '• Total Rent Expenses: ' + Math.round(totalRentPaid).toLocaleString() + ' rub.<br><br>' +
+                '🏁 <b>Financial Verdict:</b><br>' + verdict;
+        }
+        if (document.activeElement) { document.activeElement.blur(); }
+    }
+
 
     function updateAssetLabels() {
         var asset = document.getElementById('assetType').value;
