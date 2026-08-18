@@ -111,11 +111,13 @@
     <!-- Дальше идут вкладки Портфель, Долги... -->
 
 
-    <div class="tabs">
+       <div class="tabs">
         <button id="btn1" class="tab-btn active" onclick="openTab('tab-compound', 'btn1')">📈 <span id="tab1-name">Портфель</span></button>
         <button id="btn2" class="tab-btn" onclick="openTab('tab-debts', 'btn2')">📉 <span id="tab2-name">Долги</span></button>
         <button id="btn3" class="tab-btn" onclick="openTab('tab-safety', 'btn3')">💰 <span id="tab3-name">Подушка</span></button>
+        <button id="btn4" class="tab-btn" onclick="openTab('tab-realty', 'btn4')">🏠 <span id="tab4-name">Ипотека</span></button>
     </div>
+
 
     <!-- ВКЛАДКА 1 -->
     <div id="tab-compound" class="tab-content" style="display: block;">
@@ -218,6 +220,39 @@
         </div>
     </div>
 </div>
+
+
+    <!-- ВКЛАДКА 4: Ипотека против Аренды (Аналитика Pro) -->
+    <div id="tab-realty" class="tab-content" style="display: none;">
+        <div class="card">
+            <label id="lbl-prop-cost">Стоимость недвижимости (руб):</label>
+            <input type="number" id="propCost" value="8000000">
+
+            <label id="lbl-down-pay">Первоначальный взнос (руб):</label>
+            <input type="number" id="downPayment" value="2000000">
+
+            <label id="lbl-mort-rate">Ставка по ипотеке (% в год):</label>
+            <input type="number" id="mortRate" value="18">
+
+            <label id="lbl-mort-years">Срок кредита (лет):</label>
+            <input type="number" id="mortYears" value="20">
+
+            <div style="border-top: 1px solid rgba(0,0,0,0.08); margin-top: 15px; padding-top: 15px;">
+                <label id="lbl-rent-cost">Стоимость аренды в месяц (руб):</label>
+                <input type="number" id="rentCost" value="35000">
+
+                <label id="lbl-rent-inf">Ежегодный рост аренды (инфляция %):</label>
+                <input type="number" id="rentInflation" value="6">
+
+                <label id="lbl-inv-yield">Доходность инвестиций (% в год):</label>
+                <input type="number" id="invYield" value="16">
+            </div>
+
+            <button class="calc-btn" id="btn-calc4" onclick="calcRealtyBattle()">🏠 Запустить макро-анализ</button>
+            <div id="realtyResult" class="result"></div>
+        </div>
+    </div>
+
 
 <script>
     var globalDebts = [];
