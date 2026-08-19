@@ -242,36 +242,40 @@
 </div>
 
 
-    <!-- ВКЛАДКА 4: Ипотека против Аренды (Аналитика Pro) -->
+        <!-- ВКЛАДКА 4: Ипотека против Аренды (Аналитика Pro) -->
     <div id="tab-realty" class="tab-content" style="display: none;">
         <div class="card">
             <label id="lbl-prop-cost">Стоимость недвижимости (руб):</label>
-            <input type="number" id="propCost" value="8000000">
+            <!-- ИЗМЕНЕНО: тип text, добавлена маска и мгновенный пересчет -->
+            <input type="text" id="propCost" value="8 000 000" oninput="formatInputPrice(this); calcRealtyBattle();">
 
             <label id="lbl-down-pay">Первоначальный взнос (руб):</label>
-            <input type="number" id="downPayment" value="2000000">
+            <!-- ИЗМЕНЕНО: тип text, добавлена маска и мгновенный пересчет -->
+            <input type="text" id="downPayment" value="2 000 000" oninput="formatInputPrice(this); calcRealtyBattle();">
 
             <label id="lbl-mort-rate">Ставка по ипотеке (% в год):</label>
-            <input type="number" id="mortRate" value="18">
+            <input type="number" id="mortRate" value="18" oninput="calcRealtyBattle();">
 
             <label id="lbl-mort-years">Срок кредита (лет):</label>
-            <input type="number" id="mortYears" value="20">
+            <input type="number" id="mortYears" value="20" oninput="calcRealtyBattle();">
 
             <div style="border-top: 1px solid rgba(0,0,0,0.08); margin-top: 15px; padding-top: 15px;">
                 <label id="lbl-rent-cost">Стоимость аренды в месяц (руб):</label>
-                <input type="number" id="rentCost" value="35000">
+                <!-- ИЗМЕНЕНО: тип text, добавлена маска и мгновенный пересчет -->
+                <input type="text" id="rentCost" value="35 000" oninput="formatInputPrice(this); calcRealtyBattle();">
 
                 <label id="lbl-rent-inf">Ежегодный рост аренды (инфляция %):</label>
-                <input type="number" id="rentInflation" value="6">
+                <input type="number" id="rentInflation" value="6" oninput="calcRealtyBattle();">
 
                 <label id="lbl-inv-yield">Доходность инвестиций (% в год):</label>
-                <input type="number" id="invYield" value="16">
+                <input type="number" id="invYield" value="16" oninput="calcRealtyBattle();">
             </div>
 
-            <button class="calc-btn" id="btn-calc4" onclick="calcRealtyBattle()">🏠 Запустить макро-анализ</button>
-            <div id="realtyResult" class="result"></div>
+            <!-- Результат выводится мгновенно и красиво прямо в карточке -->
+            <div id="realtyResult" class="result" style="display: block;"></div>
         </div>
     </div>
+
 
 
 <script>
@@ -403,12 +407,16 @@
 
     // 2. ПРОФЕССИОНАЛЬНАЯ ФОРМУЛА: ИПОТЕКА ПРОТИВ АРЕНДЫ + ИНВЕСТИЦИЙ
     function calcRealtyBattle() {
-        var cost = parseFloat(document.getElementById('propCost').value) || 0;
-        var downPay = parseFloat(document.getElementById('downPayment').value) || 0;
+        var costRaw = document.getElementById('propCost').value.replace(/\s+/g, '');
+        var downPayRaw = document.getElementById('downPayment').value.replace(/\s+/g, '');
+        var rentRaw = document.getElementById('rentCost').value.replace(/\s+/g, '');
+
+        var cost = parseFloat(costRaw) || 0;
+        var downPay = parseFloat(downPayRaw) || 0;
+        var rent = parseFloat(rentRaw) || 0;
+
         var mortRate = (parseFloat(document.getElementById('mortRate').value) || 0) / 100;
         var years = parseInt(document.getElementById('mortYears').value) || 0;
-
-        var rent = parseFloat(document.getElementById('rentCost').value) || 0;
         var rentInf = (parseFloat(document.getElementById('rentInflation').value) || 0) / 100;
         var invYield = (parseFloat(document.getElementById('invYield').value) || 0) / 100;
 
@@ -619,5 +627,8 @@
 </div>
 </body>
 </html>
+
+
+
 
 
