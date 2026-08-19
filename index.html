@@ -389,9 +389,10 @@
         updateAssetLabels();
     }
 
-        
-        function openTab(tabId, btnId) {
-        document.getElementById('tab-compound').style.style.display = 'none';
+
+            // 1. ИСПРАВЛЕННАЯ ФУНКЦИЯ ПЕРЕКЛЮЧЕНИЯ ВКЛАДОК (Без двойного .style)
+    function openTab(tabId, btnId) {
+        document.getElementById('tab-compound').style.display = 'none';
         document.getElementById('tab-debts').style.display = 'none';
         document.getElementById('tab-safety').style.display = 'none';
         document.getElementById('tab-realty').style.display = 'none';
@@ -403,13 +404,14 @@
         document.getElementById('btn4').className = 'tab-btn';
         document.getElementById(btnId).className = 'tab-btn active';
 
-        // ПРИНУДИТЕЛЬНЫЙ СТАРТ: если открыли ипотеку — сразу запускаем ее расчет
+        // Принудительный автоматический расчет ипотеки при клике на вкладку
         if (tabId === 'tab-realty') {
             calcRealtyBattle();
         }
 
         if (document.activeElement) { document.activeElement.blur(); }
     }
+
 
 
     // 2. ПРОФЕССИОНАЛЬНАЯ ФОРМУЛА: ИПОТЕКА ПРОТИВ АРЕНДЫ + ИНВЕСТИЦИЙ
@@ -519,7 +521,7 @@
         }
     }
 
-            function calcProAsset() {
+    function calcProAsset() {
         var asset = document.getElementById('assetType').value;
 
         // Интеллектуальное очищение строк от пробелов перед математикой
