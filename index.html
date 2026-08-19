@@ -175,7 +175,7 @@
             <button class="calc-btn btn-green" id="btn-adddebt" onclick="addProDebt()">➕ Внести кредит в реестр</button>
 
             <div id="addedDebtsBlock" style="margin-top: 20px; display: none;">
-                <label id="lbl-dregistry">Реестр активных обязательств:</label>
+                <label id="lbl-dregistry">Реестр active обязательств:</label>
                 <div id="debtsList"></div>
             </div>
 
@@ -184,17 +184,16 @@
                 <input type="text" id="debtExtra" value="5 000" oninput="formatInputPrice(this); calcProDebts();">
 
                 <label id="lbl-dstrat">Выберите стратегию оптимизации:</label>
-                            <select id="debtStrategy" onchange="calcProDebts();">
-                <option value="avalanche" id="opt-avalanche" selected>⚡️ Кредитная Лавина (Экономия)</option>
+                <select id="debtStrategy" onchange="calcProDebts();">
+                                    <option value="avalanche" id="opt-avalanche" selected>⚡️ Кредитная Лавина (Экономия)</option>
                 <option value="snowball" id="opt-snowball">🚗 Снежный ком (Комфорт)</option>
             </select>
             <div id="snowballResult" class="result" style="display: none;"></div>
         </div>
     </div>
 
-
     <!-- ВКЛАДКА 3: ПОДУШКА -->
-    <div id="tab-safety" class="tab-content">
+    <div id="tab-safety" class="tab-content" style="display: none;">
         <div class="card">
             <label id="lbl-sbase">📊 Бюджет критических трат (в месяц):</label>
             <input type="text" id="expBase" value="30 000" oninput="formatInputPrice(this); calcProSafetyNet();">
@@ -216,7 +215,7 @@
     </div>
 
     <!-- ВКЛАДКА 4: ИПОТЕКА -->
-    <div id="tab-realty" class="tab-content">
+    <div id="tab-realty" class="tab-content" style="display: none;">
         <div class="card">
             <label id="lbl-prop-cost">Стоимость недвижимости (руб):</label>
             <input type="text" id="propCost" value="8 000 000" oninput="formatInputPrice(this); calcRealtyBattle();">
@@ -244,7 +243,6 @@
         </div>
     </div>
 </div>
-
 <script>
     var globalDebts = [];
     var currentLang = 'ru';
@@ -353,7 +351,7 @@
         document.getElementById(tabId).style.display = 'block';
 
         document.getElementById('btn1').className = 'tab-btn';
-                document.getElementById('btn2').className = 'tab-btn';
+        document.getElementById('btn2').className = 'tab-btn';
         document.getElementById('btn3').className = 'tab-btn';
         document.getElementById('btn4').className = 'tab-btn';
         document.getElementById(btnId).className = 'tab-btn active';
@@ -399,15 +397,15 @@
         var profit = nominalTotal - totalInvested;
         var taxValue = profit > 0 ? profit * taxRate : 0;
         var totalAfterTax = nominalTotal - taxValue;
-        var sign = asset === "XAU" ? (currentLang==='ru'?"унций":"oz") : (asset === "BRENT" ? (currentLang==='ru'?"барр.":"bbl") : asset);
+                var sign = asset === "XAU" ? (currentLang==='ru'?"унций":"oz") : (asset === "BRENT" ? (currentLang==='ru'?"барр.":"bbl") : asset);
 
         var resDiv = document.getElementById('assetResult');
         resDiv.style.display = 'block';
 
         if (currentLang === 'ru') {
-            resDiv.innerHTML = '📊 <b>Номинальный объем позиции:</b><br>• Итого на балансе: <b>' + Math.round(nominalTotal).toLocaleString('ru-RU') + ' ' + sign + '</b><br>• Налог на прирост: <span style="color: #e74c3c;">-' + Math.round(taxValue).toLocaleString('ru-RU') + '</span><br>• Чистый баланс: <b>' + Math.round(totalAfterTax).toLocaleString('ru-RU') + ' ' + sign + '</b><br><br>📉 <b>Реальная ценность (с учетом инфляции):</b><br>• С учетом инфляции: <span style="color: #2ecc71; font-weight: bold;">' + Math.round(realTotal).toLocaleString('ru-RU') + ' ' + sign + '</b><br><br>📥 Ваши личные вложения: ' + Math.round(totalInvested).toLocaleString('ru-RU') + ' ' + sign;
+            resDiv.innerHTML = '📊 <b>Номинальный объем позиции:</b><br>• Итого на балансе: <b>' + Math.round(nominalTotal).toLocaleString() + ' ' + sign + '</b><br>• Налог на прирост: <span style="color: #e74c3c;">-' + Math.round(taxValue).toLocaleString() + '</span><br>• Чистый баланс: <b>' + Math.round(totalAfterTax).toLocaleString() + ' ' + sign + '</b><br><br>📉 <b>Реальная ценность (с учетом инфляции):</b><br>• С учетом инфляции: <span style="color: #2ecc71; font-weight: bold;">' + Math.round(realTotal).toLocaleString() + ' ' + sign + '</b><br><br>📥 Ваши личные вложения: ' + Math.round(totalInvested).toLocaleString();
         } else {
-            resDiv.innerHTML = '📊 <b>Nominal Position Volume:</b><br>• Total Balance: <b>' + Math.round(nominalTotal).toLocaleString('ru-RU') + ' ' + sign + '</b><br>• Capital Gains Tax: <span style="color: #e74c3c;">-' + Math.round(taxValue).toLocaleString('ru-RU') + '</span><br>• Net Balance: <b>' + Math.round(totalAfterTax).toLocaleString('ru-RU') + ' ' + sign + '</b><br><br>📉 <b>Real Value (Inflation Adjusted):</b><br>• Real Value: <span style="color: #2ecc71; font-weight: bold;">' + Math.round(realTotal).toLocaleString('ru-RU') + ' ' + sign + '</b><br><br>📥 Total Invested by You: ' + Math.round(totalInvested).toLocaleString('ru-RU') + ' ' + sign;
+            resDiv.innerHTML = '📊 <b>Nominal Position Volume:</b><br>• Total Balance: <b>' + Math.round(nominalTotal).toLocaleString() + ' ' + sign + '</b><br>• Capital Gains Tax: <span style="color: #e74c3c;">-' + Math.round(taxValue).toLocaleString() + '</span><br>• Net Balance: <b>' + Math.round(totalAfterTax).toLocaleString() + ' ' + sign + '</b><br><br>📉 <b>Real Value (Inflation Adjusted):</b><br>• Real Value: <span style="color: #2ecc71; font-weight: bold;">' + Math.round(realTotal).toLocaleString() + ' ' + sign + '</b><br><br>📥 Total Invested by You: ' + Math.round(totalInvested).toLocaleString();
         }
     }
 
@@ -490,7 +488,7 @@
 
         var resDiv = document.getElementById('safetyResult'); resDiv.style.display = 'block';
         if (currentLang === 'ru') {
-                resDiv.innerHTML = '🛡️ <b>Моделирование Резервного Фонда:</b><br><br>🟢 <b>Сценарий «Комфорт»:</b> <b>' + Math.round(totalComfortStyle).toLocaleString('ru-RU') + ' руб.</b><br>⚠️ <b>Сценарий «Выживание»:</b> <b>' + Math.round(totalSurvivalStyle).toLocaleString('ru-RU') + ' руб.</b><br><br>🏛 <b>Ликвидность резерва (20%/50%/30%):</b><br>• Кеш: ' + Math.round(totalComfortStyle*0.2).toLocaleString('ru-RU') + ' руб.<br>• Вклад: ' + Math.round(totalComfortStyle*0.5).toLocaleString('ru-RU') + ' руб.<br>• ОФЗ: ' + Math.round(totalComfortStyle*0.3).toLocaleString('ru-RU') + ' руб.';
+            resDiv.innerHTML = '🛡️ <b>Моделирование Резервного Фонда:</b><br><br>🟢 <b>Сценарий «Комфорт»:</b> <b>' + Math.round(totalComfortStyle).toLocaleString('ru-RU') + ' руб.</b><br>⚠️ <b>Сценарий «Выживание»:</b> <b>' + Math.round(totalSurvivalStyle).toLocaleString('ru-RU') + ' руб.</b><br><br>🏛 <b>Ликвидность резерва (20%/50%/30%):</b><br>• Кеш: ' + Math.round(totalComfortStyle*0.2).toLocaleString('ru-RU') + ' руб.<br>• Вклад: ' + Math.round(totalComfortStyle*0.5).toLocaleString('ru-RU') + ' руб.<br>• ОФЗ: ' + Math.round(totalComfortStyle*0.3).toLocaleString('ru-RU') + ' руб.';
         } else {
             resDiv.innerHTML = '🛡️ <b>Emergency Fund Modeling:</b><br><br>🟢 <b>Comfort Scenario:</b> <b>' + Math.round(totalComfortStyle).toLocaleString('ru-RU') + '</b><br>⚠️ <b>Survival Scenario:</b> <b>' + Math.round(totalSurvivalStyle).toLocaleString('ru-RU') + '</b><br><br>🏛 <b>Liquidity Distribution (20%/50%/30%):</b><br>• Cash: ' + Math.round(totalComfortStyle*0.2).toLocaleString('ru-RU') + '<br>• Bank: ' + Math.round(totalComfortStyle*0.5).toLocaleString('ru-RU') + '<br>• Bonds: ' + Math.round(totalComfortStyle*0.3).toLocaleString('ru-RU');
         }
@@ -540,9 +538,9 @@
         if (currentLang === 'ru') {
             var verdict = portfolio > cost ?
                 '<span style="color: #2ecc71; font-weight: bold;">🏢 Стратегия Аренды выгоднее!</span> Накопленный капитал превышает стоимость квартиры.' :
-                '<span style="color: #2481cc; font-weight: bold;">🏠 Стратегия Ипотеки выгоднее!</span> Своя недвижимость защитила капитал лучше рынка.';
+                                '<span style="color: #2481cc; font-weight: bold;">🏠 Стратегия Ипотеки выгоднее!</span> Своя недвижимость защитила капитал лучше рынка.';
 
-            resDiv.innerHTML =
+            resDiv.innerHTML = 
                 '<b>🏦 Сценарий «Ипотека» за ' + years + ' лет:</b><br>' +
                 '• Ежемесячный платеж банкирам: <b>' + Math.round(mortgagePayment).toLocaleString('ru-RU') + ' руб.</b><br>' +
                 '• Всего выплатите банку: ' + Math.round(totalMortgagePaid).toLocaleString('ru-RU') + ' руб.<br>' +
@@ -552,11 +550,11 @@
                 '• Суммарно отдадите за аренду: ' + Math.round(totalRentPaid).toLocaleString('ru-RU') + ' руб.<br><br>' +
                 '🏁 <b>Вердикт финансиста:</b><br>' + verdict;
         } else {
-            var verdict = portfolio > cost ?
-                '<span style="color: #2ecc71; font-weight: bold;">🏢 Rent & Invest wins!</span> Your capital grows larger than property value.' :
+            var verdict = portfolio > cost ? 
+                '<span style="color: #2ecc71; font-weight: bold;">🏢 Rent & Invest wins!</span> Your capital grows larger than property value.' : 
                 '<span style="color: #2481cc; font-weight: bold;">🏠 Mortgage wins!</span> Property equity outperformed the investment strategy.';
 
-            resDiv.innerHTML =
+            resDiv.innerHTML = 
                 '<b>🏦 Mortgage Scenario (' + years + ' years):</b><br>' +
                 '• Monthly Bank Payment: <b>' + Math.round(mortgagePayment).toLocaleString('ru-RU') + ' rub.</b><br>' +
                 '• Total Paid to Bank: ' + Math.round(totalMortgagePaid).toLocaleString('ru-RU') + ' rub.<br>' +
@@ -568,21 +566,16 @@
         }
     }
 
-        updateAssetLabels();
+    // Первоначальный запуск расчетов при загрузке страницы
+    updateAssetLabels();
     calcProAsset();
+    calcProDebts();
     calcProSafetyNet();
     calcRealtyBattle();
-
 </script>
 </div>
 </body>
 </html>
-
-
-
-
-
-
 
 
 
