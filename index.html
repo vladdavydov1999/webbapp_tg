@@ -242,16 +242,16 @@
 </div>
 
 
-        <!-- ВКЛАДКА 4: Ипотека против Аренды (Аналитика Pro) -->
+            <!-- ВКЛАДКА 4: Ипотека против Аренды (Аналитика Pro) -->
     <div id="tab-realty" class="tab-content" style="display: none;">
         <div class="card">
             <label id="lbl-prop-cost">Стоимость недвижимости (руб):</label>
-            <!-- ИЗМЕНЕНО: тип text, добавлена маска и мгновенный пересчет -->
-            <input type="text" id="propCost" value="8 000 000" oninput="formatInputPrice(this); calcRealtyBattle();">
+            <!-- ИЗМЕНЕНО: Чистое число 8000000 в value без пробелов -->
+            <input type="text" id="propCost" value="8000000" oninput="formatInputPrice(this); calcRealtyBattle();">
 
             <label id="lbl-down-pay">Первоначальный взнос (руб):</label>
-            <!-- ИЗМЕНЕНО: тип text, добавлена маска и мгновенный пересчет -->
-            <input type="text" id="downPayment" value="2 000 000" oninput="formatInputPrice(this); calcRealtyBattle();">
+            <!-- ИЗМЕНЕНО: Чистое число 2000000 в value без пробелов -->
+            <input type="text" id="downPayment" value="2000000" oninput="formatInputPrice(this); calcRealtyBattle();">
 
             <label id="lbl-mort-rate">Ставка по ипотеке (% в год):</label>
             <input type="number" id="mortRate" value="18" oninput="calcRealtyBattle();">
@@ -261,8 +261,8 @@
 
             <div style="border-top: 1px solid rgba(0,0,0,0.08); margin-top: 15px; padding-top: 15px;">
                 <label id="lbl-rent-cost">Стоимость аренды в месяц (руб):</label>
-                <!-- ИЗМЕНЕНО: тип text, добавлена маска и мгновенный пересчет -->
-                <input type="text" id="rentCost" value="35 000" oninput="formatInputPrice(this); calcRealtyBattle();">
+                <!-- ИЗМЕНЕНО: Чистое число 35000 в value без пробелов -->
+                <input type="text" id="rentCost" value="35000" oninput="formatInputPrice(this); calcRealtyBattle();">
 
                 <label id="lbl-rent-inf">Ежегодный рост аренды (инфляция %):</label>
                 <input type="number" id="rentInflation" value="6" oninput="calcRealtyBattle();">
@@ -275,6 +275,7 @@
             <div id="realtyResult" class="result" style="display: block;"></div>
         </div>
     </div>
+
 
 
 
@@ -388,22 +389,28 @@
         updateAssetLabels();
     }
 
-        // 1. ИСПРАВЛЕННАЯ ФУНКЦИЯ ПЕРЕКЛЮЧЕНИЯ (Теперь поддерживает 4 кнопки)
-    function openTab(tabId, btnId) {
-        document.getElementById('tab-compound').style.display = 'none';
+        
+        function openTab(tabId, btnId) {
+        document.getElementById('tab-compound').style.style.display = 'none';
         document.getElementById('tab-debts').style.display = 'none';
         document.getElementById('tab-safety').style.display = 'none';
-        document.getElementById('tab-realty').style.display = 'none'; // Скрываем ипотеку
+        document.getElementById('tab-realty').style.display = 'none';
         document.getElementById(tabId).style.display = 'block';
 
         document.getElementById('btn1').className = 'tab-btn';
         document.getElementById('btn2').className = 'tab-btn';
         document.getElementById('btn3').className = 'tab-btn';
-        document.getElementById('btn4').className = 'tab-btn'; // Сбрасываем 4-ю кнопку
-        document.getElementById(btnId).className = 'tab-btn active'; // Делаем активной нужную
+        document.getElementById('btn4').className = 'tab-btn';
+        document.getElementById(btnId).className = 'tab-btn active';
+
+        // ПРИНУДИТЕЛЬНЫЙ СТАРТ: если открыли ипотеку — сразу запускаем ее расчет
+        if (tabId === 'tab-realty') {
+            calcRealtyBattle();
+        }
 
         if (document.activeElement) { document.activeElement.blur(); }
     }
+
 
     // 2. ПРОФЕССИОНАЛЬНАЯ ФОРМУЛА: ИПОТЕКА ПРОТИВ АРЕНДЫ + ИНВЕСТИЦИЙ
     function calcRealtyBattle() {
@@ -627,8 +634,5 @@
 </div>
 </body>
 </html>
-
-
-
 
 
