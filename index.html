@@ -116,7 +116,7 @@
         <button id="btn4" class="tab-btn" onclick="openTab('tab-realty', 'btn4')">🏠 <span id="tab4-name">Ипотека</span></button>
     </div>
 
-    <!-- ВКЛАДКА 1: ПОРТФЕЛЬ -->
+        <!-- ВКЛАДКА 1: ПОРТФЕЛЬ -->
     <div id="tab-compound" class="tab-content" style="display: block;">
         <div class="card">
             <label id="lbl-asset">Выберите базовый актив:</label>
@@ -132,20 +132,20 @@
 
             <label id="lblPrincipal">Стартовый капитал:</label>
             <input type="text" id="principal" value="50 000" oninput="formatInputPrice(this); calcProAsset();">
-
+            
             <label id="lblMonthly">Регулярное пополнение (в месяц):</label>
             <input type="text" id="monthly" value="5 000" oninput="formatInputPrice(this); calcProAsset();">
-
+            
             <label id="lbl-rate">Ожидаемый рост актива (% в год):</label>
             <input type="number" id="rate" value="16" oninput="calcProAsset();">
-
+            
             <label id="lbl-years">Срок удержания позиции (лет):</label>
             <input type="number" id="years" value="5" oninput="calcProAsset();">
 
             <div style="border-top: 1px solid rgba(0,0,0,0.08); margin-top: 15px; padding-top: 15px;">
                 <label id="lbl-inflation">Прогнозная инфляция по активу (% в год):</label>
                 <input type="number" id="inflation" value="6" oninput="calcProAsset();">
-
+                
                 <label id="lbl-tax">Налоговая ставка на прибыль (%):</label>
                 <select id="taxRate" onchange="calcProAsset();">
                     <option value="0" id="opt-tax0">0% (Льготный период / ИИС)</option>
@@ -158,36 +158,37 @@
     </div>
 
     <!-- ВКЛАДКА 2: ДОЛГИ -->
-    <div id="tab-debts" class="tab-content">
+    <div id="tab-debts" class="tab-content" style="display: none;">
         <div class="card">
             <label id="lbl-dname">Название обязательства (кредита):</label>
             <input type="text" id="debtName" placeholder="Например: Кредитка">
-
+            
             <label id="lbl-dbal">Текущий остаток долга:</label>
             <input type="text" id="debtBalance" placeholder="50 000" oninput="formatInputPrice(this);">
-
+            
             <label id="lbl-drate">Процентная ставка (% в год):</label>
             <input type="number" id="debtRate" value="15">
-
+            
             <label id="lbl-dmin">Минимальный платёж:</label>
             <input type="text" id="debtMin" placeholder="3 000" oninput="formatInputPrice(this);">
-
+            
             <button class="calc-btn btn-green" id="btn-adddebt" onclick="addProDebt()">➕ Внести кредит в реестр</button>
 
             <div id="addedDebtsBlock" style="margin-top: 20px; display: none;">
-                <label id="lbl-dregistry">Реестр active обязательств:</label>
+                <label id="lbl-dregistry">Реестр активных обязательств:</label>
                 <div id="debtsList"></div>
             </div>
 
             <div style="border-top: 1px solid rgba(0,0,0,0.08); margin-top: 20px; padding-top: 15px;">
                 <label id="lbl-dextra">Ежемесячный ускоритель досрочного гашения:</label>
                 <input type="text" id="debtExtra" value="5 000" oninput="formatInputPrice(this); calcProDebts();">
-
+                
                 <label id="lbl-dstrat">Выберите стратегию оптимизации:</label>
                 <select id="debtStrategy" onchange="calcProDebts();">
-                                    <option value="avalanche" id="opt-avalanche" selected>⚡️ Кредитная Лавина (Экономия)</option>
-                <option value="snowball" id="opt-snowball">🚗 Снежный ком (Комфорт)</option>
-            </select>
+                    <option value="avalanche" id="opt-avalanche" selected>⚡️ Кредитная Лавина (Экономия)</option>
+                    <option value="snowball" id="opt-snowball">🚗 Снежный ком (Комфорт)</option>
+                </select>
+            </div>
             <div id="snowballResult" class="result" style="display: none;"></div>
         </div>
     </div>
@@ -242,7 +243,8 @@
             <div id="realtyResult" class="result"></div>
         </div>
     </div>
-</div>
+</div> <!-- Закрываем общий контейнер .container -->
+
 <script>
     var globalDebts = [];
     var currentLang = 'ru';
@@ -540,7 +542,7 @@
                 '<span style="color: #2ecc71; font-weight: bold;">🏢 Стратегия Аренды выгоднее!</span> Накопленный капитал превышает стоимость квартиры.' :
                                 '<span style="color: #2481cc; font-weight: bold;">🏠 Стратегия Ипотеки выгоднее!</span> Своя недвижимость защитила капитал лучше рынка.';
 
-            resDiv.innerHTML = 
+            resDiv.innerHTML =
                 '<b>🏦 Сценарий «Ипотека» за ' + years + ' лет:</b><br>' +
                 '• Ежемесячный платеж банкирам: <b>' + Math.round(mortgagePayment).toLocaleString('ru-RU') + ' руб.</b><br>' +
                 '• Всего выплатите банку: ' + Math.round(totalMortgagePaid).toLocaleString('ru-RU') + ' руб.<br>' +
@@ -550,11 +552,11 @@
                 '• Суммарно отдадите за аренду: ' + Math.round(totalRentPaid).toLocaleString('ru-RU') + ' руб.<br><br>' +
                 '🏁 <b>Вердикт финансиста:</b><br>' + verdict;
         } else {
-            var verdict = portfolio > cost ? 
-                '<span style="color: #2ecc71; font-weight: bold;">🏢 Rent & Invest wins!</span> Your capital grows larger than property value.' : 
+            var verdict = portfolio > cost ?
+                '<span style="color: #2ecc71; font-weight: bold;">🏢 Rent & Invest wins!</span> Your capital grows larger than property value.' :
                 '<span style="color: #2481cc; font-weight: bold;">🏠 Mortgage wins!</span> Property equity outperformed the investment strategy.';
 
-            resDiv.innerHTML = 
+            resDiv.innerHTML =
                 '<b>🏦 Mortgage Scenario (' + years + ' years):</b><br>' +
                 '• Monthly Bank Payment: <b>' + Math.round(mortgagePayment).toLocaleString('ru-RU') + ' rub.</b><br>' +
                 '• Total Paid to Bank: ' + Math.round(totalMortgagePaid).toLocaleString('ru-RU') + ' rub.<br>' +
