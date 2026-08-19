@@ -151,10 +151,11 @@
             </select>
 
             <label id="lblPrincipal">Стартовый капитал:</label>
-            <input type="number" id="principal" value="50000" oninput="calcProAsset();">
+            <input type="text" id="principal" value="50 000" oninput="formatInputPrice(this); calcProAsset();">
 
             <label id="lblMonthly">Регулярное пополнение (в месяц):</label>
-            <input type="number" id="monthly" value="5000" oninput="calcProAsset();">
+            <input type="text" id="monthly" value="5 000" oninput="formatInputPrice(this); calcProAsset();">
+
 
             <label id="lbl-rate">Ожидаемый рост актива (% в год):</label>
             <input type="number" id="rate" value="16" oninput="calcProAsset();">
@@ -276,6 +277,19 @@
 <script>
     var globalDebts = [];
     var currentLang = 'ru';
+        // Умная маска: разделяет тысячи пробелами прямо в момент ввода букв
+    function formatInputPrice(input) {
+        // Удаляем все пробелы и не-цифры, которые ввел пользователь
+        var value = input.value.replace(/\s+/g, '').replace(/\D/g, '');
+
+        if (value) {
+            // Форматируем число с пробелами и возвращаем в инпут
+            input.value = parseFloat(value).toLocaleString('ru-RU');
+        } else {
+            input.value = '';
+        }
+    }
+
         // Функция плавного обновления бейджей над слайдерами
     function updateSliderVal(sliderId, badgeId, suffix) {
         var val = parseFloat(document.getElementById(sliderId).value);
@@ -490,10 +504,16 @@
         }
     }
 
-    function calcProAsset() {
+            function calcProAsset() {
         var asset = document.getElementById('assetType').value;
-        var p = parseFloat(document.getElementById('principal').value) || 0;
-        var m = parseFloat(document.getElementById('monthly').value) || 0;
+
+        // Интеллектуальное очищение строк от пробелов перед математикой
+        var pRaw = document.getElementById('principal').value.replace(/\s+/g, '');
+        var mRaw = document.getElementById('monthly').value.replace(/\s+/g, '');
+
+        var p = parseFloat(pRaw) || 0;
+        var m = parseFloat(mRaw) || 0;
+
         var nominalRate = (parseFloat(document.getElementById('rate').value) || 0) / 100;
         var years = parseInt(document.getElementById('years').value) || 0;
         var inflationRate = (parseFloat(document.getElementById('inflation').value) || 0) / 100;
@@ -525,19 +545,6 @@
         }
     }
 
-    function addProDebt() {
-            var name = document.getElementById('debtName').value.trim();
-        var balance = parseFloat(document.getElementById('debtBalance').value);
-        var rate = parseFloat(document.getElementById('debtRate').value);
-        var min = parseFloat(document.getElementById('debtMin').value);
-        if (!name || isNaN(balance) || isNaN(rate) || isNaN(min)) { alert("Fill all fields!"); return; }
-
-        globalDebts.push({ name: name, balance: balance, rate: rate, min_payment: min });
-        var listDiv = document.getElementById('debtsList');
-        document.getElementById('addedDebtsBlock').style.display = 'block';
-        listDiv.innerHTML += '<div class="debt-item">📌 <b>' + name + '</b>: ' + balance.toLocaleString() + ' (Rate: ' + rate + '%, Min: ' + min + ')</div>';
-        document.getElementById('debtName').value = ''; document.getElementById('debtBalance').value = ''; document.getElementById('debtMin').value = '';
-    }
 
     function calcProDebts() {
         if (globalDebts.length === 0) { alert("Registry is empty!"); return; }
