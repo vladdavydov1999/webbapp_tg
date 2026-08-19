@@ -136,7 +136,7 @@
     </div>
 
 
-        <!-- ВКЛАДКА 1: Интерактивный Расчет Активов -->
+            <!-- ВКЛАДКА 1: Профессиональный Расчет Портфеля -->
     <div id="tab-compound" class="tab-content" style="display: block;">
         <div class="card">
             <label id="lbl-asset">Выберите базовый актив:</label>
@@ -150,36 +150,21 @@
                 <option value="BRENT" id="opt-oil">OIL Нефть Brent (Баррель)</option>
             </select>
 
-            <div class="label-row">
-                <label id="lblPrincipal">Стартовый капитал:</label>
-                <span id="valPrincipal" class="val-badge">10 000</span>
-            </div>
-            <input type="range" id="principal" min="0" max="1000000" step="5000" value="10000" oninput="updateSliderVal('principal', 'valPrincipal'); calcProAsset();">
+            <label id="lblPrincipal">Стартовый капитал:</label>
+            <input type="number" id="principal" value="50000" oninput="calcProAsset();">
 
-            <div class="label-row">
-                <label id="lblMonthly">Регулярное пополнение (в месяц):</label>
-                <span id="valMonthly" class="val-badge">5 000</span>
-            </div>
-            <input type="range" id="monthly" min="0" max="100000" step="1000" value="5000" oninput="updateSliderVal('monthly', 'valMonthly'); calcProAsset();">
+            <label id="lblMonthly">Регулярное пополнение (в месяц):</label>
+            <input type="number" id="monthly" value="5000" oninput="calcProAsset();">
 
-            <div class="label-row">
-                <label id="lbl-rate">Ожидаемый рост актива (% в год):</label>
-                <span id="valRate" class="val-badge">12%</span>
-            </div>
-            <input type="range" id="rate" min="1" max="40" step="1" value="12" oninput="updateSliderVal('rate', 'valRate', '%'); calcProAsset();">
+            <label id="lbl-rate">Ожидаемый рост актива (% в год):</label>
+            <input type="number" id="rate" value="16" oninput="calcProAsset();">
 
-            <div class="label-row">
-                <label id="lbl-years">Срок удержания позиции (лет):</label>
-                <span id="valYears" class="val-badge">5</span>
-            </div>
-            <input type="range" id="years" min="1" max="30" step="1" value="5" oninput="updateSliderVal('years', 'valYears'); calcProAsset();">
+            <label id="lbl-years">Срок удержания позиции (лет):</label>
+            <input type="number" id="years" value="5" oninput="calcProAsset();">
 
             <div style="border-top: 1px solid rgba(0,0,0,0.08); margin-top: 15px; padding-top: 15px;">
-                <div class="label-row">
-                    <label id="lbl-inflation">Прогнозная инфляция по активу (% в год):</label>
-                    <span id="valInflation" class="val-badge">4%</span>
-                </div>
-                <input type="range" id="inflation" min="0" max="25" step="1" value="4" oninput="updateSliderVal('inflation', 'valInflation', '%'); calcProAsset();">
+                <label id="lbl-inflation">Прогнозная инфляция по активу (% в год):</label>
+                <input type="number" id="inflation" value="6" oninput="calcProAsset();">
 
                 <label id="lbl-tax">Налоговая ставка на прибыль (%):</label>
                 <select id="taxRate" onchange="calcProAsset();">
@@ -189,9 +174,11 @@
                 </select>
             </div>
 
+            <!-- Результат выводится мгновенно и красиво прямо в карточке -->
             <div id="assetResult" class="result" style="display: block;"></div>
         </div>
     </div>
+
 
 
     <!-- ВКЛАДКА 2 -->
