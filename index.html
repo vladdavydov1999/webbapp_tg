@@ -184,11 +184,14 @@
                 <input type="text" id="debtExtra" value="5 000" oninput="formatInputPrice(this); calcProDebts();">
 
                 <label id="lbl-dstrat">Выберите стратегию оптимизации:</label>
-                <select id="debtStrategy" onchange="calcProDebts();">
-                                <div id="snowballResult" class="result" style="display: none;"></div>
-            
-            </div>
+                            <select id="debtStrategy" onchange="calcProDebts();">
+                <option value="avalanche" id="opt-avalanche" selected>⚡️ Кредитная Лавина (Экономия)</option>
+                <option value="snowball" id="opt-snowball">🚗 Снежный ком (Комфорт)</option>
+            </select>
+            <div id="snowballResult" class="result" style="display: none;"></div>
+        </div>
     </div>
+
 
     <!-- ВКЛАДКА 3: ПОДУШКА -->
     <div id="tab-safety" class="tab-content">
