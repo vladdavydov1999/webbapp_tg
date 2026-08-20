@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Финансовый Аналитик Pro</title>
+    <!-- Подключаем графическое ядро Chart.js напрямую из CDN -->
+    <script src="https://jsdelivr.net"></script>
     <style>
         :root {
             --bg-color: #f4f6fa;
@@ -116,7 +118,7 @@
         <button id="btn4" class="tab-btn" onclick="openTab('tab-realty', 'btn4')">🏠 <span id="tab4-name">Ипотека</span></button>
     </div>
 
-        <!-- ВКЛАДКА 1: ПОРТФЕЛЬ -->
+    <!-- ВКЛАДКА 1: ПОРТФЕЛЬ -->
     <div id="tab-compound" class="tab-content" style="display: block;">
         <div class="card">
             <label id="lbl-asset">Выберите базовый актив:</label>
@@ -154,6 +156,10 @@
                 </select>
             </div>
             <div id="assetResult" class="result"></div>
+            <!-- Холст для живого графика Chart.js -->
+            <div style="margin-top: 24px; position: relative; width: 100%; height: 220px;">
+                <canvas id="assetChart"></canvas>
+            </div>
         </div>
     </div>
 
@@ -180,15 +186,14 @@
             </div>
 
             <div style="border-top: 1px solid rgba(0,0,0,0.08); margin-top: 20px; padding-top: 15px;">
-                <label id="lbl-dextra">Ежемесячный ускоритель досрочного гашения:</label>
-                <input type="text" id="debtExtra" value="5 000" oninput="formatInputPrice(this); calcProDebts();">
+                            <label id="lbl-dextra">Ежемесячный ускоритель досрочного гашения:</label>
+            <input type="text" id="debtExtra" value="5 000" oninput="formatInputPrice(this); calcProDebts();">
 
-                <label id="lbl-dstrat">Выберите стратегию оптимизации:</label>
-                <select id="debtStrategy" onchange="calcProDebts();">
-                    <option value="avalanche" id="opt-avalanche" selected>⚡️ Кредитная Лавина (Экономия)</option>
-                    <option value="snowball" id="opt-snowball">🚗 Снежный ком (Комфорт)</option>
-                </select>
-            </div>
+            <label id="lbl-dstrat">Выберите стратегию оптимизации:</label>
+            <select id="debtStrategy" onchange="calcProDebts();">
+                <option value="avalanche" id="opt-avalanche" selected>⚡️ Кредитная Лавина (Экономия)</option>
+                <option value="snowball" id="opt-snowball">🚗 Снежный ком (Комфорт)</option>
+            </select>
             <div id="snowballResult" class="result" style="display: none;"></div>
         </div>
     </div>
@@ -243,11 +248,12 @@
             <div id="realtyResult" class="result"></div>
         </div>
     </div>
-</div> <!-- Закрываем общий контейнер .container -->
+</div>
 
 <script>
     var globalDebts = [];
     var currentLang = 'ru';
+    var myAssetChart = null;
 
     var dictionary = {
         ru: {
@@ -337,8 +343,7 @@
         document.getElementById('lbl-rent-cost').innerText = d.rent_cost;
         document.getElementById('lbl-rent-inf').innerText = d.rent_inf;
         document.getElementById('lbl-inv-yield').innerText = d.inv_yield;
-
-        updateAssetLabels();
+                updateAssetLabels();
         calcProAsset();
         calcProDebts();
         calcProSafetyNet();
@@ -376,9 +381,6 @@
         }
     }
 
-            // Объявляем глобальную переменную для графика, чтобы стирать старый при пересчете
-    var myAssetChart = null;
-
     function calcProAsset() {
         var asset = document.getElementById('assetType').value;
         var p = parseFloat(document.getElementById('principal').value.replace(/\s+/g, '')) || 0;
@@ -393,8 +395,7 @@
         var nominalRateMonthly = nominalRate / 12;
         var nominalTotal = p, realTotal = p, totalInvested = p;
 
-        // ИСПРАВЛЕНО: Восстановили скобки массивов [0] и [p]
-        var chartLabels =;
+        var chartLabels = [];
         var chartNominalData = [p];
         var chartRealData = [p];
 
@@ -403,7 +404,6 @@
             realTotal = realTotal * (1 + realRateMonthly) + m;
             totalInvested += m;
 
-            // Записываем данные в график каждый год (каждые 12 месяцев)
             if (i % 12 === 0) {
                 chartLabels.push(i / 12);
                 chartNominalData.push(Math.round(nominalTotal));
@@ -425,10 +425,10 @@
             resDiv.innerHTML = '📊 <b>Nominal Position Volume:</b><br>• Total Balance: <b>' + Math.round(nominalTotal).toLocaleString() + ' ' + sign + '</b><br>• Capital Gains Tax: <span style="color: #e74c3c;">-' + Math.round(taxValue).toLocaleString() + '</span><br>• Net Balance: <b>' + Math.round(totalAfterTax).toLocaleString() + ' ' + sign + '</b><br><br>📉 <b>Real Value (Inflation Adjusted):</b><br>• Real Value: <span style="color: #2ecc71; font-weight: bold;">' + Math.round(realTotal).toLocaleString() + ' ' + sign + '</b><br><br>📥 Total Invested by You: ' + Math.round(totalInvested).toLocaleString();
         }
 
-        // --- КРАСИВАЯ ОТРИСОВКА ЖИВОГО ГРАФИКА CHART.JS ---
-        var ctx = document.getElementById('assetChart').getContext('2d');
+        var canvasEl = document.getElementById('assetChart');
+        if (!canvasEl) return;
+        var ctx = canvasEl.getContext('2d');
 
-        // Уничтожаем старый график перед тем как нарисовать новый
         if (myAssetChart) { myAssetChart.destroy(); }
 
         var isDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -457,7 +457,6 @@
                         backgroundColor: 'rgba(46, 204, 113, 0.05)',
                         borderWidth: 2,
                         pointRadius: 0,
-                        borderDash:, // ИСПРАВЛЕНО: Восстановили настройки пунктира [5, 5]
                         tension: 0.3
                     }
                 ]
@@ -482,8 +481,6 @@
             }
         });
     }
-
-
 
     function addProDebt() {
         var name = document.getElementById('debtName').value.trim();
@@ -519,7 +516,7 @@
                 if (calcDebts[j].balance > 0) {
                     var actualMin = Math.min(calcDebts[j].min_payment, calcDebts[j].balance);
                     calcDebts[j].balance -= actualMin;
-                    if (actualMin > calcDebts[j].balance && calcDebts[j].balance === 0) { currentExtraPool += (actualMin - calcDebts[j].balance); }
+                                    if (actualMin > calcDebts[j].balance && calcDebts[j].balance === 0) { currentExtraPool += (actualMin - calcDebts[j].balance); }
                 }
             }
             if (strategy === "avalanche") { calcDebts.sort(function(a, b) { return b.rate - a.rate; }); }
@@ -583,7 +580,7 @@
         var years = parseInt(document.getElementById('mortYears').value) || 0;
         var rentInf = (parseFloat(document.getElementById('rentInflation').value) || 0) / 100;
         var invYield = (parseFloat(document.getElementById('invYield').value) || 0) / 100;
-
+        
         var months = years * 12;
         var loanAmount = cost - downPay;
 
@@ -612,11 +609,11 @@
         resDiv.style.display = 'block';
 
         if (currentLang === 'ru') {
-            var verdict = portfolio > cost ?
-                '<span style="color: #2ecc71; font-weight: bold;">🏢 Стратегия Аренды выгоднее!</span> Накопленный капитал превышает стоимость квартиры.' :
-                                '<span style="color: #2481cc; font-weight: bold;">🏠 Стратегия Ипотеки выгоднее!</span> Своя недвижимость защитила капитал лучше рынка.';
+            var verdict = portfolio > cost ? 
+                '<span style="color: #2ecc71; font-weight: bold;">🏢 Стратегия Аренды выгоднее!</span> Накопленный капитал превышает стоимость квартиры.' : 
+                '<span style="color: #2481cc; font-weight: bold;">🏠 Стратегия Ипотеки выгоднее!</span> Своя недвижимость защитила капитал лучше рынка.';
 
-            resDiv.innerHTML =
+            resDiv.innerHTML = 
                 '<b>🏦 Сценарий «Ипотека» за ' + years + ' лет:</b><br>' +
                 '• Ежемесячный платеж банкирам: <b>' + Math.round(mortgagePayment).toLocaleString('ru-RU') + ' руб.</b><br>' +
                 '• Всего выплатите банку: ' + Math.round(totalMortgagePaid).toLocaleString('ru-RU') + ' руб.<br>' +
@@ -626,11 +623,11 @@
                 '• Суммарно отдадите за аренду: ' + Math.round(totalRentPaid).toLocaleString('ru-RU') + ' руб.<br><br>' +
                 '🏁 <b>Вердикт финансиста:</b><br>' + verdict;
         } else {
-            var verdict = portfolio > cost ?
-                '<span style="color: #2ecc71; font-weight: bold;">🏢 Rent & Invest wins!</span> Your capital grows larger than property value.' :
+            var verdict = portfolio > cost ? 
+                '<span style="color: #2ecc71; font-weight: bold;">🏢 Rent & Invest wins!</span> Your capital grows larger than property value.' : 
                 '<span style="color: #2481cc; font-weight: bold;">🏠 Mortgage wins!</span> Property equity outperformed the investment strategy.';
 
-            resDiv.innerHTML =
+            resDiv.innerHTML = 
                 '<b>🏦 Mortgage Scenario (' + years + ' years):</b><br>' +
                 '• Monthly Bank Payment: <b>' + Math.round(mortgagePayment).toLocaleString('ru-RU') + ' rub.</b><br>' +
                 '• Total Paid to Bank: ' + Math.round(totalMortgagePaid).toLocaleString('ru-RU') + ' rub.<br>' +
@@ -652,6 +649,11 @@
 </div>
 </body>
 </html>
+
+
+
+
+
 
 
 
