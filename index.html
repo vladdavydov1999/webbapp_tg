@@ -132,20 +132,20 @@
 
             <label id="lblPrincipal">Стартовый капитал:</label>
             <input type="text" id="principal" value="50 000" oninput="formatInputPrice(this); calcProAsset();">
-            
+
             <label id="lblMonthly">Регулярное пополнение (в месяц):</label>
             <input type="text" id="monthly" value="5 000" oninput="formatInputPrice(this); calcProAsset();">
-            
+
             <label id="lbl-rate">Ожидаемый рост актива (% в год):</label>
             <input type="number" id="rate" value="16" oninput="calcProAsset();">
-            
+
             <label id="lbl-years">Срок удержания позиции (лет):</label>
             <input type="number" id="years" value="5" oninput="calcProAsset();">
 
             <div style="border-top: 1px solid rgba(0,0,0,0.08); margin-top: 15px; padding-top: 15px;">
                 <label id="lbl-inflation">Прогнозная инфляция по активу (% в год):</label>
                 <input type="number" id="inflation" value="6" oninput="calcProAsset();">
-                
+
                 <label id="lbl-tax">Налоговая ставка на прибыль (%):</label>
                 <select id="taxRate" onchange="calcProAsset();">
                     <option value="0" id="opt-tax0">0% (Льготный период / ИИС)</option>
@@ -162,16 +162,16 @@
         <div class="card">
             <label id="lbl-dname">Название обязательства (кредита):</label>
             <input type="text" id="debtName" placeholder="Например: Кредитка">
-            
+
             <label id="lbl-dbal">Текущий остаток долга:</label>
             <input type="text" id="debtBalance" placeholder="50 000" oninput="formatInputPrice(this);">
-            
+
             <label id="lbl-drate">Процентная ставка (% в год):</label>
             <input type="number" id="debtRate" value="15">
-            
+
             <label id="lbl-dmin">Минимальный платёж:</label>
             <input type="text" id="debtMin" placeholder="3 000" oninput="formatInputPrice(this);">
-            
+
             <button class="calc-btn btn-green" id="btn-adddebt" onclick="addProDebt()">➕ Внести кредит в реестр</button>
 
             <div id="addedDebtsBlock" style="margin-top: 20px; display: none;">
@@ -182,7 +182,7 @@
             <div style="border-top: 1px solid rgba(0,0,0,0.08); margin-top: 20px; padding-top: 15px;">
                 <label id="lbl-dextra">Ежемесячный ускоритель досрочного гашения:</label>
                 <input type="text" id="debtExtra" value="5 000" oninput="formatInputPrice(this); calcProDebts();">
-                
+
                 <label id="lbl-dstrat">Выберите стратегию оптимизации:</label>
                 <select id="debtStrategy" onchange="calcProDebts();">
                     <option value="avalanche" id="opt-avalanche" selected>⚡️ Кредитная Лавина (Экономия)</option>
@@ -376,6 +376,9 @@
         }
     }
 
+        // Объявляем глобальную переменную для графика, чтобы стирать старый при пересчете
+    var myAssetChart = null;
+
     function calcProAsset() {
         var asset = document.getElementById('assetType').value;
         var p = parseFloat(document.getElementById('principal').value.replace(/\s+/g, '')) || 0;
@@ -385,31 +388,102 @@
         var inflationRate = (parseFloat(document.getElementById('inflation').value) || 0) / 100;
         var taxRate = (parseFloat(document.getElementById('taxRate').value) || 0) / 100;
         var months = years * 12;
-
+        
         var realRateMonthly = ((1 + nominalRate) / (1 + inflationRate) - 1) / 12;
         var nominalRateMonthly = nominalRate / 12;
         var nominalTotal = p, realTotal = p, totalInvested = p;
 
-        for (var i = 0; i < months; i++) {
+        // Массивы для сбора точек графика по годам
+        var chartLabels =;
+        var chartNominalData = [p];
+        var chartRealData = [p];
+
+        for (var i = 1; i <= months; i++) {
             nominalTotal = nominalTotal * (1 + nominalRateMonthly) + m;
             realTotal = realTotal * (1 + realRateMonthly) + m;
             totalInvested += m;
+
+            // Записываем данные в график каждый год (каждые 12 месяцев)
+            if (i % 12 === 0) {
+                chartLabels.push(i / 12);
+                chartNominalData.push(Math.round(nominalTotal));
+                chartRealData.push(Math.round(realTotal));
+            }
         }
 
         var profit = nominalTotal - totalInvested;
         var taxValue = profit > 0 ? profit * taxRate : 0;
         var totalAfterTax = nominalTotal - taxValue;
-                var sign = asset === "XAU" ? (currentLang==='ru'?"унций":"oz") : (asset === "BRENT" ? (currentLang==='ru'?"барр.":"bbl") : asset);
+        var sign = asset === "XAU" ? (currentLang==='ru'?"унций":"oz") : (asset === "BRENT" ? (currentLang==='ru'?"барр.":"bbl") : asset);
 
         var resDiv = document.getElementById('assetResult');
         resDiv.style.display = 'block';
-
+        
         if (currentLang === 'ru') {
             resDiv.innerHTML = '📊 <b>Номинальный объем позиции:</b><br>• Итого на балансе: <b>' + Math.round(nominalTotal).toLocaleString() + ' ' + sign + '</b><br>• Налог на прирост: <span style="color: #e74c3c;">-' + Math.round(taxValue).toLocaleString() + '</span><br>• Чистый баланс: <b>' + Math.round(totalAfterTax).toLocaleString() + ' ' + sign + '</b><br><br>📉 <b>Реальная ценность (с учетом инфляции):</b><br>• С учетом инфляции: <span style="color: #2ecc71; font-weight: bold;">' + Math.round(realTotal).toLocaleString() + ' ' + sign + '</b><br><br>📥 Ваши личные вложения: ' + Math.round(totalInvested).toLocaleString();
         } else {
             resDiv.innerHTML = '📊 <b>Nominal Position Volume:</b><br>• Total Balance: <b>' + Math.round(nominalTotal).toLocaleString() + ' ' + sign + '</b><br>• Capital Gains Tax: <span style="color: #e74c3c;">-' + Math.round(taxValue).toLocaleString() + '</span><br>• Net Balance: <b>' + Math.round(totalAfterTax).toLocaleString() + ' ' + sign + '</b><br><br>📉 <b>Real Value (Inflation Adjusted):</b><br>• Real Value: <span style="color: #2ecc71; font-weight: bold;">' + Math.round(realTotal).toLocaleString() + ' ' + sign + '</b><br><br>📥 Total Invested by You: ' + Math.round(totalInvested).toLocaleString();
         }
+
+        // --- МАГИЯ ОТРИСОВКИ ЖИВОГО ГРАФИКА CHART.JS ---
+        var ctx = document.getElementById('assetChart').getContext('2d');
+        
+        // Уничтожаем старый график, если он уже был нарисован ранее
+        if (myAssetChart) { myAssetChart.destroy(); }
+
+        // Определяем цвет текста в зависимости от темы (темная или светлая)
+        var isDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+        var gridColor = isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.04)';
+        var textColor = isDark ? '#eceff4' : '#2c3e50';
+
+        myAssetChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: chartLabels,
+                datasets: [
+                    {
+                        label: currentLang === 'ru' ? 'Номинал' : 'Nominal',
+                        data: chartNominalData,
+                        borderColor: '#2481cc',
+                        backgroundColor: 'rgba(36, 129, 204, 0.1)',
+                        borderWidth: 3,
+                        pointRadius: 2,
+                        tension: 0.3,
+                        fill: true
+                    },
+                    {
+                        label: currentLang === 'ru' ? 'С учетом инфляции' : 'Inflation Adjusted',
+                        data: chartRealData,
+                        borderColor: '#2ecc71',
+                        backgroundColor: 'rgba(46, 204, 113, 0.05)',
+                        borderWidth: 2,
+                        pointRadius: 0,
+                        borderDash:,
+                        tension: 0.3
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { labels: { color: textColor, font: { weight: '600', size: 11 } } }
+                },
+                scales: {
+                    x: { 
+                        grid: { color: gridColor }, 
+                        ticks: { color: textColor, font: { size: 10 } },
+                        title: { display: true, text: currentLang === 'ru' ? 'Лет' : 'Years', color: textColor, font: { weight: '600' } }
+                    },
+                    y: { 
+                        grid: { color: gridColor }, 
+                        ticks: { color: textColor, font: { size: 10 }, callback: function(value) { return value.toLocaleString(); } }
+                    }
+                }
+            }
+        });
     }
+
 
     function addProDebt() {
         var name = document.getElementById('debtName').value.trim();
