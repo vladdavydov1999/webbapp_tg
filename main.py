@@ -1,5 +1,4 @@
 
-
 import telebot
 import time
 import requests
@@ -62,6 +61,8 @@ def is_spam(chat_id):
 
 # ================= 📈 СЕТЕВЫЕ ИНВЕСТ-МОДУЛИ (ММВБ / ЦБ) =================
 
+# ================= 📈 ПРОКАЧАННЫЕ БИРЖЕВЫЕ МЕДИА-МОДУЛИ =================
+
 def get_forex_rates():
     try:
         url = "https://cbr-xml-daily.ru"
@@ -75,23 +76,24 @@ def get_forex_rates():
 
             usd_byn = usd_rub / byn_rub if byn_rub else 0
             eur_byn = eur_rub / byn_rub if byn_rub else 0
-            cny_byn = (cny_rub * 10) / byn_rub if byn_rub else 0
 
             return (
-                "💵 **Официальные курсы валют Центробанка РФ:**\n\n"
-                "📊 **К российскому рублю (RUB):**\n"
-                f"🇺🇸 1 USD = {usd_rub:.2f} RUB\n"
-                f"🇪🇺 1 EUR = {eur_rub:.2f} RUB\n"
-                f"🇨🇳 10 CNY = {cny_rub * 10:.2f} RUB\n\n"
-                "🇧🇾 **К белорусскому рублю (BYN):**\n"
-                f"🇺🇸 1 USD = {usd_byn:.4f} BYN\n"
-                f"🇪🇺 1 EUR = {eur_byn:.4f} BYN\n"
-                f"🇨🇳 10 CNY = {cny_byn:.4f} BYN\n\n"
-                "🏛 _Источник данных: Центральный Банк РФ_"
+                "📰 <b>МАКРОЭКОНОМИКА: ВАЛЮТНЫЙ ШЛЮЗ ЦБ РФ</b>\n"
+                "📌 <i>Анализ стабильности региональных валют</i>\n\n"
+                "💵 <b>Курсы к российскому рублю (RUB):</b>\n"
+                f"▪️ Доллар США: <code>{usd_rub:.2f} RUB</code>\n"
+                f"▪️ Еврозона: <code>{eur_rub:.2f} RUB</code>\n"
+                f"▪️ Юань КНР (10 CNY): <code>{cny_rub * 10:.2f} RUB</code>\n\n"
+                "🇧🇾 <b>Курсы к белорусскому рублю (BYN):</b>\n"
+                f"▪️ Доллар США: <code>{usd_byn:.4f} BYN</code>\n"
+                f"▪️ Еврозона: <code>{eur_byn:.4f} BYN</code>\n\n"
+                "💡 <b>Краткая сводка для инвестора:</b>\n"
+                "При ослаблении национальных валют финансовые аналитики рекомендуют удерживать до 30% капитала в твердых инструментах или юанях для защиты от девальвационных рисков.\n"
+                "📊 <i>Статус шлюза: Стабилен. Источник: Центробанк РФ.</i>"
             )
     except Exception as e:
         print(f"Ошибка валют ЦБ: {e}")
-    return "⚠️ Шлюз валютных котировок временно недоступен. Включите российский VPN."
+    return "⚠️ Сырьевой шлюз временно перегружен. Запустите российский VPN для синхронизации."
 
 
 def get_moex_stocks():
@@ -100,21 +102,31 @@ def get_moex_stocks():
         response = requests.get(url, timeout=5)
         if response.status_code == 200:
             rows = response.json()["securities"]["data"]
-            target_tickers = {"SBER": "🍏 Сбербанк", "GAZP": "🔥 Газпром", "LKOH": "⛽️ Лукойл", "YNDX": "📱 Яндекс",
+            target_tickers = {"SBER": "🍎 Сбербанк", "GAZP": "🔥 Газпром", "LKOH": "⛽ Лукойл", "YNDX": "📱 Яндекс",
                               "NVTK": "❄️ Новатэк"}
-            result_text = "📈 **Актуальные цены акций на Московской Бирже:**\n\n"
+
+            result_text = (
+                "📰 <b>ОБЗОР РЫНКА: АКЦИИ МОСКОВСКОЙ БИРЖИ (MOEX)</b>\n"
+                "📌 <i id=\"stocks-trend\">Дневной срез капитализации крупнейших эмитентов</i>\n\n"
+            )
             found = False
             for row in rows:
                 secid, price = row[0], row[1]
                 if secid in target_tickers and price is not None:
                     found = True
-                    result_text += f"{target_tickers[secid]} ({secid}) = **{price:.2f} RUB**\n"
+                    result_text += f"▪️ <b>{target_tickers[secid]}</b> ({secid}): <code>{price:.2f} RUB</code>\n"
+
             if found:
-                result_text += "\n⚡️ _Котировки обновлены в реальном времени из MOEX._"
+                result_text += (
+                    "\n💡 <b>Рыночный индикатор:</b>\n"
+                    "Текущие ценовые уровни голубых фишек отражают баланс корпоративных прибылей и дивидендных ожиданий. "
+                    "В периоды высокой ключевой ставки акции требуют жесткого риск-менеджмента. Фокусируйтесь на компаниях с чистой денежной позицией.\n\n"
+                    "⚡ <i>Котировки обновлены напрямую из торгового ядра MOEX.</i>"
+                )
                 return result_text
     except Exception as e:
         print(f"Ошибка акций MOEX: {e}")
-    return "⚠️ Торговый сервер MOEX не отвечает. Включите российский VPN."
+    return "⚠️ Торговый сервер MOEX не отвечает. Проверьте подключение к российскому VPN."
 
 
 def get_moex_bonds():
@@ -123,9 +135,15 @@ def get_moex_bonds():
         response = requests.get(url, timeout=5)
         if response.status_code == 200:
             rows = response.json()["securities"]["data"]
-            target_bonds = {"SU26238RMFS4": "🏛 ОФЗ 26238 (Долгосрочная)", "SU26244RMFS2": "🏛 ОФЗ 26244 (Среднесрочная)",
-                            "SU26243RMFS4": "🏛 ОФЗ 26243 (Краткосрочная)"}
-            result_text = "🎫 **Текущая доходность гособлигаций РФ (ОФЗ):**\n\n"
+            target_bonds = {
+                "SU26238RMFS4": "🏛️ ОФЗ 26238 (Долгосрочная, 2041 год)",
+                "SU26244RMFS2": "🏛️ ОФЗ 26244 (Среднесрочная, 2034 год)",
+                "SU26243RMFS4": "🏛️ ОФЗ 26243 (Краткосрочная, 2029 год)"
+            }
+            result_text = (
+                "📰 <b>СТРАТЕГИЯ: РЫНОК ГОСДОЛГА РФ (ОФЗ)</b>\n"
+                "📌 <i>Фиксация безрисковой доходности</i>\n\n"
+            )
             found = False
             for row in rows:
                 secid, price, bond_yield = row[0], row[1], row[2]
@@ -133,13 +151,19 @@ def get_moex_bonds():
                     found = True
                     p_str = f"{price:.2f}%" if price is not None else "нет торгов"
                     y_str = f"{bond_yield:.2f}%" if bond_yield is not None else "нет данных"
-                    result_text += f"**{target_bonds[secid]}**\n▪️ Цена: {p_str} от номинала\n▪️ Доходность: **{y_str}**\n\n"
+                    result_text += f"▪️ <b>{target_bonds[secid]}</b>\n  Текущая цена: <code>{p_str}</code> | <b>Доходность: {y_str} в год</b>\n\n"
+
             if found:
-                result_text += "💡 _Доходность зафиксируется на весь срок, если держать ОФЗ до погашения._"
+                result_text += (
+                    "💡 <b>Аналитический вердикт:</b>\n"
+                    "Государственные облигации (ОФЗ-ПД) позволяют зафиксировать рекордную доходность на годы вперед. "
+                    "В сценарии снижения инфляции долгосрочные облигации покажут максимальный прирост тела капитала за счет эффекта переоценки.\n\n"
+                    "⚖️ <i>Риск-статус: Минимальный (Суверенный эмитент).</i>"
+                )
                 return result_text
     except Exception as e:
         print(f"Ошибка облигаций MOEX: {e}")
-    return "⚠️ Долговой рынок биржи недоступен. Включите российский VPN."
+    return "⚠️ Долговой рынок МосБиржи временно недоступен под VPN."
 
 
 def get_moex_commodities():
@@ -150,24 +174,39 @@ def get_moex_commodities():
         response_brent = requests.get(url_brent, timeout=5)
         gold_price = None
         brent_price = None
+
         if response_gold.status_code == 200:
             data = response_gold.json()["marketdata"]["data"]
             if data: gold_price = data[0][1]
         if response_brent.status_code == 200:
             data = response_brent.json()["marketdata"]["data"]
             if data: brent_price = data[0][1]
+
         if gold_price or brent_price:
-            text = "🏆 **Котировки сырьевых товаров (MOEX):**\n\n"
+            text = (
+                "📰 <b>АНАЛИТИКА: МИРОВЫЕ СЫРЬЕВЫЕ РЫНКИ</b>\n"
+                "📌 <i>Защитные активы и энергетический сектор</i>\n\n"
+            )
             if gold_price:
                 gold_ounce = gold_price * 31.1035
-                text += f"👑 **Золото (XAU):**\n▪️ 1 грамм = **{gold_price:.2f} RUB**\n▪️ 1 тройская унция = **{gold_ounce:.2f} RUB**\n\n"
+                text += (
+                    f"👑 <b>Золото спот (GLDRUB_TOM):</b>\n"
+                    f"  Цена за 1 грамм: <code>{gold_price:.2f} RUB</code>\n"
+                    f"  Тройская унция: <code>{gold_ounce:.2f} RUB</code>\n\n"
+                )
             if brent_price:
-                text += f"🛢 **Нефть Brent (OIL):**\n▪️ 1 баррель = **{brent_price:.2f} USD**\n\n"
-            text += "⚡️ _Данные обновлены напрямую из торгового ядра MOEX._"
+                text += f"🛢️ <b>Нефть марки Brent (OIL):</b>\n  Стоимость барреля: <code>{brent_price:.2f} USD</code>\n\n"
+
+            text += (
+                "💡 <b>Макро-комментарий:</b>\n"
+                "Золото выступает главным глобальным предохранителем от геополитических шоков и инфляции. "
+                "Наш симулятор портфеля во вкладке Mini App автоматически рассчитывает реальную покупательскую способность капитала, опираясь на эти базовые сырьевые котировки.\n\n"
+                "🏁 <i>Синхронизация с товарной секцией биржи активна.</i>"
+            )
             return text
     except Exception as e:
         print(f"Ошибка товаров: {e}")
-    return "⚠️ Сырьевой шлюз биржи недоступен. Включите российский VPN."
+    return "⚠️ Не удалось связаться с товарной секцией Московской Биржи."
 
 
 # ================= 🤖 ОБРАБОТЧИКИ КОМАНД (ХЕНДЛЕРЫ) =================
@@ -324,5 +363,3 @@ if __name__ == '__main__':
     print("Профессиональное мультиядро фин-учета запущено...")
     bot.infinity_polling()
 
-
-  
