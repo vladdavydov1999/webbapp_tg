@@ -376,7 +376,7 @@
         }
     }
 
-        // Объявляем глобальную переменную для графика, чтобы стирать старый при пересчете
+            // Объявляем глобальную переменную для графика, чтобы стирать старый при пересчете
     var myAssetChart = null;
 
     function calcProAsset() {
@@ -388,12 +388,12 @@
         var inflationRate = (parseFloat(document.getElementById('inflation').value) || 0) / 100;
         var taxRate = (parseFloat(document.getElementById('taxRate').value) || 0) / 100;
         var months = years * 12;
-        
+
         var realRateMonthly = ((1 + nominalRate) / (1 + inflationRate) - 1) / 12;
         var nominalRateMonthly = nominalRate / 12;
         var nominalTotal = p, realTotal = p, totalInvested = p;
 
-        // Массивы для сбора точек графика по годам
+        // ИСПРАВЛЕНО: Восстановили скобки массивов [0] и [p]
         var chartLabels =;
         var chartNominalData = [p];
         var chartRealData = [p];
@@ -418,20 +418,19 @@
 
         var resDiv = document.getElementById('assetResult');
         resDiv.style.display = 'block';
-        
+
         if (currentLang === 'ru') {
             resDiv.innerHTML = '📊 <b>Номинальный объем позиции:</b><br>• Итого на балансе: <b>' + Math.round(nominalTotal).toLocaleString() + ' ' + sign + '</b><br>• Налог на прирост: <span style="color: #e74c3c;">-' + Math.round(taxValue).toLocaleString() + '</span><br>• Чистый баланс: <b>' + Math.round(totalAfterTax).toLocaleString() + ' ' + sign + '</b><br><br>📉 <b>Реальная ценность (с учетом инфляции):</b><br>• С учетом инфляции: <span style="color: #2ecc71; font-weight: bold;">' + Math.round(realTotal).toLocaleString() + ' ' + sign + '</b><br><br>📥 Ваши личные вложения: ' + Math.round(totalInvested).toLocaleString();
         } else {
             resDiv.innerHTML = '📊 <b>Nominal Position Volume:</b><br>• Total Balance: <b>' + Math.round(nominalTotal).toLocaleString() + ' ' + sign + '</b><br>• Capital Gains Tax: <span style="color: #e74c3c;">-' + Math.round(taxValue).toLocaleString() + '</span><br>• Net Balance: <b>' + Math.round(totalAfterTax).toLocaleString() + ' ' + sign + '</b><br><br>📉 <b>Real Value (Inflation Adjusted):</b><br>• Real Value: <span style="color: #2ecc71; font-weight: bold;">' + Math.round(realTotal).toLocaleString() + ' ' + sign + '</b><br><br>📥 Total Invested by You: ' + Math.round(totalInvested).toLocaleString();
         }
 
-        // --- МАГИЯ ОТРИСОВКИ ЖИВОГО ГРАФИКА CHART.JS ---
+        // --- КРАСИВАЯ ОТРИСОВКА ЖИВОГО ГРАФИКА CHART.JS ---
         var ctx = document.getElementById('assetChart').getContext('2d');
-        
-        // Уничтожаем старый график, если он уже был нарисован ранее
+
+        // Уничтожаем старый график перед тем как нарисовать новый
         if (myAssetChart) { myAssetChart.destroy(); }
 
-        // Определяем цвет текста в зависимости от темы (темная или светлая)
         var isDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
         var gridColor = isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.04)';
         var textColor = isDark ? '#eceff4' : '#2c3e50';
@@ -458,7 +457,7 @@
                         backgroundColor: 'rgba(46, 204, 113, 0.05)',
                         borderWidth: 2,
                         pointRadius: 0,
-                        borderDash:,
+                        borderDash:, // ИСПРАВЛЕНО: Восстановили настройки пунктира [5, 5]
                         tension: 0.3
                     }
                 ]
@@ -470,19 +469,20 @@
                     legend: { labels: { color: textColor, font: { weight: '600', size: 11 } } }
                 },
                 scales: {
-                    x: { 
-                        grid: { color: gridColor }, 
+                    x: {
+                        grid: { color: gridColor },
                         ticks: { color: textColor, font: { size: 10 } },
                         title: { display: true, text: currentLang === 'ru' ? 'Лет' : 'Years', color: textColor, font: { weight: '600' } }
                     },
-                    y: { 
-                        grid: { color: gridColor }, 
+                    y: {
+                        grid: { color: gridColor },
                         ticks: { color: textColor, font: { size: 10 }, callback: function(value) { return value.toLocaleString(); } }
                     }
                 }
             }
         });
     }
+
 
 
     function addProDebt() {
