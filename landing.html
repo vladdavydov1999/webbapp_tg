@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Фин-Терминал Pro — Инвестиционная Экосистема в Telegram</title>
+    <title>Фин-Терминал Pro — Инвестиционная Экосистема</title>
     <style>
         :root {
             --bg-color: #0d0e12;
@@ -15,11 +15,8 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            margin: 0; padding: 0;
-            display: flex; flex-direction: column; align-items: center;
-            overflow-x: hidden;
+            background-color: var(--bg-color); color: var(--text-color);
+            margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; overflow-x: hidden;
         }
 
         .container { max-width: 800px; width: 100%; padding: 40px 20px; box-sizing: border-box; text-align: center; }
@@ -30,67 +27,53 @@
         .cta-btn {
             display: inline-block; background-color: var(--accent-color); color: #fff; text-decoration: none;
             padding: 20px 40px; border-radius: 16px; font-size: 18px; font-weight: 700;
-            box-shadow: 0 8px 30px rgba(36, 129, 204, 0.4); transition: all 0.3s ease;
-            animation: pulse 2s infinite;
+            box-shadow: 0 8px 30px rgba(36, 129, 204, 0.4); transition: all 0.3s ease; animation: pulse 2s infinite;
         }
         .cta-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(36, 129, 204, 0.6); }
 
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-            margin: 60px 0;
-            text-align: left;
-        }
-
-        .card { background-color: var(--card-bg); padding: 30px 20px; border-radius: 24px; text-align: left; border: 1px solid rgba(255,255,255,0.03); transition: transform 0.2s ease; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin: 60px 0; text-align: left; }
+        .card { background-color: var(--card-bg); padding: 30px 20px; border-radius: 24px; border: 1px solid rgba(255,255,255,0.03); transition: transform 0.2s ease; }
         .card:hover { transform: translateY(-4px); }
         .card h3 { font-size: 20px; margin: 0 0 12px 0; display: flex; align-items: center; gap: 10px; }
         .card p { font-size: 14px; color: var(--muted-text); margin: 0; line-height: 1.6; }
 
+        /* БЛОК СВЯЗИ */
+        .support-block { margin: 40px 0; padding: 30px; background: rgba(36, 129, 204, 0.05); border-radius: 24px; border: 1px dashed var(--accent-color); }
+        .support-link { color: var(--accent-color); font-weight: 700; text-decoration: none; }
+
         footer { font-size: 12px; color: var(--muted-text); margin-top: 40px; opacity: 0.6; }
 
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.03); }
-            100% { transform: scale(1); }
-        }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.03); } 100% { transform: scale(1); } }
     </style>
 </head>
 <body>
 
 <div class="container">
     <header>
-        <h1>📊 Фин-Терминал Pro</h1>
-        <p>Ультимативный макроэкономический симулятор, инвестиционный трекер и персональный зашифрованный сейф расходов прямо внутри вашего Telegram.</p>
-        <!-- Ссылка ведет прямо на запуск твоего Mini App -->
-        <a href="https://vladdavydov1999.github.io/webbapp_tg/?v=300" class="cta-btn">🤖 ЗАПУСТИТЬ В TELEGRAM</a>
+        <h1 id="web-title">📊 Фин-Терминал Pro</h1>
+        <p id="web-desc">Ультимативный макроэкономический симулятор, инвестиционный трекер и персональный зашифрованный сейф расходов прямо внутри вашего Telegram.</p>
+        <a href="https://t.me" class="cta-btn" id="web-btn">🤖 ЗАПУСТИТЬ В TELEGRAM</a>
     </header>
 
-        <div class="grid">
+    <div class="grid">
         <div class="card">
             <h3>📈 Портфель Pro</h3>
-            <p>Моделируйте сложные инвестиционные стратегии в реальном времени. Расчет активов в мировых валютах, тройских унциях золота и баррелях нефти Brent.</p>
+            <p>Моделируйте сложные инвестиционные стратегии в реальном времени. Расчет активов в мировых валютах, унциях золота и нефти.</p>
         </div>
         <div class="card">
             <h3>⚡ Кредитная Лавина</h3>
-            <p>Оптимизируйте долговую нагрузку с помощью алгоритмов досрочного гашения. Программа автоматически рассчитывает экономию на процентах банкиров.</p>
-        </div>
-        <div class="card">
-            <h3>🛡️ Стресс-Сценарии</h3>
-            <p>Рассчитайте горизонт финансовой безопасности. Система смоделирует резервный фонд для сценариев "Комфорт" и "Выживание" и распределит ликвидность.</p>
-        </div>
-
-        <div class="card">
-            <h3>🏠 Ипотечный Батл</h3>
-            <p>Жесткий макроэкономический анализ: покупка недвижимости в кредит против аренды со сложным процентом. Узнайте истинную выгоду с учетом инфляции.</p>
+            <p>Оптимизируйте долговую нагрузку с помощью алгоритмов досрочного гашения. Программа автоматически рассчитывает экономию на процентах.</p>
         </div>
     </div>
 
-
+    <div class="support-block">
+        <p style="margin: 0 0 10px 0; font-weight: 600;">💡 Возникли вопросы или предложения по сотрудничеству?</p>
+        <!-- Напиши сюда свой юзернейм в Telegram, чтобы клиенты могли писать тебе напрямую -->
+        <a href="https://vladdavydov1999.github.io/webbapp_tg/?v=300" class="support-block support-link">📨 Связаться с Основателем проекта</a>
+    </div>
 
     <footer>
-        © 2026 Фин-Терминал Pro Экосистема. Все права защищены. Без скачиваний и регистраций.
+        © 2026 Фин-Терминал Pro Экосистема. Все права защищены. Глобальный шлюз данных ExchangeRate.
     </footer>
 </div>
 
