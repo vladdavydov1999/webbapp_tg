@@ -166,92 +166,93 @@
             </div>
         </div>
     </div>
+</div>
 
-    <!-- ВКЛАДКА 2: ДОЛГИ -->
-    <div id="tab-debts" class="tab-content" style="display: none;">
-        <div class="card">
-            <label id="lbl-dname">Название обязательства (кредита):</label>
-            <input type="text" id="debtName" placeholder="Например: Кредитка">
+<!-- ВКЛАДКА 2: ДОЛГИ -->
+<div id="tab-debts" class="tab-content" style="display: none;">
+    <div class="card">
+        <label id="lbl-dname">Название обязательства (кредита):</label>
+        <input type="text" id="debtName" placeholder="Например: Кредитка">
 
-            <label id="lbl-dbal">Текущий остаток долга:</label>
-            <input type="text" id="debtBalance" placeholder="50 000" oninput="formatInputPrice(this);">
+        <label id="lbl-dbal">Текущий остаток долга:</label>
+        <input type="text" id="debtBalance" placeholder="50 000" oninput="formatInputPrice(this);">
 
-            <label id="lbl-drate">Процентная ставка (% в год):</label>
-            <input type="number" id="debtRate" value="15">
+        <label id="lbl-drate">Процентная ставка (% в год):</label>
+        <input type="number" id="debtRate" value="15">
 
-            <label id="lbl-dmin">Минимальный платёж:</label>
-            <input type="text" id="debtMin" placeholder="3 000" oninput="formatInputPrice(this);">
+        <label id="lbl-dmin">Минимальный платёж:</label>
+        <input type="text" id="debtMin" placeholder="3 000" oninput="formatInputPrice(this);">
 
-            <button class="calc-btn btn-green" id="btn-adddebt" onclick="addProDebt()">➕ Внести кредит в реестр</button>
+        <button class="calc-btn btn-green" id="btn-adddebt" onclick="addProDebt()">➕ Внести кредит в реестр</button>
 
-            <div id="addedDebtsBlock" style="margin-top: 20px; display: none;">
-                <label id="lbl-dregistry">Реестр активных обязательств:</label>
-                <div id="debtsList"></div>
-            </div>
-
-            <div style="border-top: 1px solid rgba(0,0,0,0.08); margin-top: 20px; padding-top: 15px;">
-                <label id="lbl-dextra">Ежемесячный ускоритель досрочного гашения:</label>
-                <input type="text" id="debtExtra" value="5 000" oninput="formatInputPrice(this); calcProDebts();">
-
-                <label id="lbl-dstrat">Выберите стратегию оптимизации:</label>
-                <select id="debtStrategy" onchange="calcProDebts();">
-                    <option value="avalanche" id="opt-avalanche" selected>⚡️ Кредитная Лавина (Экономия)</option>
-                    <option value="snowball" id="opt-snowball">🚗 Снежный ком (Комфорт)</option>
-                </select>
-            </div>
-            <div id="snowballResult" class="result" style="display: none;"></div>
+        <div id="addedDebtsBlock" style="margin-top: 20px; display: none;">
+            <label id="lbl-dregistry">Реестр активных обязательств:</label>
+            <div id="debtsList"></div>
         </div>
-    </div>
-    <!-- ВКЛАДКА 3: ПОДУШКА -->
-    <div id="tab-safety" class="tab-content" style="display: none;">
-        <div class="card">
-            <label id="lbl-sbase">📊 Бюджет критических трат (в месяц):</label>
-            <input type="text" id="expBase" value="30 000" oninput="formatInputPrice(this); calcProSafetyNet();">
 
-            <label id="lbl-scomfort">🚗 Бюджет комфортных трат (в month):</label>
-            <input type="text" id="expComfort" value="15 000" oninput="formatInputPrice(this); calcProSafetyNet();">
+        <div style="border-top: 1px solid rgba(0,0,0,0.08); margin-top: 20px; padding-top: 15px;">
+            <label id="lbl-dextra">Ежемесячный ускоритель досрочного гашения:</label>
+            <input type="text" id="debtExtra" value="5 000" oninput="formatInputPrice(this); calcProDebts();">
 
-            <label id="lbl-spremium">🌟 Бюджет избыточных трат (в месяц):</label>
-            <input type="text" id="expPremium" value="10 000" oninput="formatInputPrice(this); calcProSafetyNet();">
-
-            <label id="lbl-shorizon">🛡️ Требуемый горизонт безопасности:</label>
-            <select id="safetyPeriod" onchange="calcProSafetyNet();">
-                <option value="3" id="opt-s3">3 месяца</option>
-                <option value="6" id="opt-s6" selected>6 месяцев</option>
-                <option value="12" id="opt-s12">12 месяцев</option>
+            <label id="lbl-dstrat">Выберите стратегию оптимизации:</label>
+            <select id="debtStrategy" onchange="calcProDebts();">
+                <option value="avalanche" id="opt-avalanche" selected>⚡️ Кредитная Лавина (Экономия)</option>
+                <option value="snowball" id="opt-snowball">🚗 Снежный ком (Комфорт)</option>
             </select>
-            <div id="safetyResult" class="result"></div>
         </div>
+        <div id="snowballResult" class="result" style="display: none;"></div>
     </div>
+</div>
+<!-- ВКЛАДКА 3: ПОДУШКА -->
+<div id="tab-safety" class="tab-content" style="display: none;">
+    <div class="card">
+        <label id="lbl-sbase">📊 Бюджет критических трат (в месяц):</label>
+        <input type="text" id="expBase" value="30 000" oninput="formatInputPrice(this); calcProSafetyNet();">
 
-    <!-- ВКЛАДКА 4: ИПОТЕКА -->
-    <div id="tab-realty" class="tab-content" style="display: none;">
-        <div class="card">
-            <label id="lbl-prop-cost">Стоимость недвижимости (руб):</label>
-            <input type="text" id="propCost" value="8 000 000" oninput="formatInputPrice(this); calcRealtyBattle();">
+        <label id="lbl-scomfort">🚗 Бюджет комфортных трат (в month):</label>
+        <input type="text" id="expComfort" value="15 000" oninput="formatInputPrice(this); calcProSafetyNet();">
 
-            <label id="lbl-down-pay">Первоначальный взнос (руб):</label>
-            <input type="text" id="downPayment" value="2 000 000" oninput="formatInputPrice(this); calcRealtyBattle();">
+        <label id="lbl-spremium">🌟 Бюджет избыточных трат (в месяц):</label>
+        <input type="text" id="expPremium" value="10 000" oninput="formatInputPrice(this); calcProSafetyNet();">
 
-            <label id="lbl-mort-rate">Ставка по ипотеке (% в год):</label>
-            <input type="number" id="mortRate" value="18" oninput="calcRealtyBattle();">
+        <label id="lbl-shorizon">🛡️ Требуемый горизонт безопасности:</label>
+        <select id="safetyPeriod" onchange="calcProSafetyNet();">
+            <option value="3" id="opt-s3">3 месяца</option>
+            <option value="6" id="opt-s6" selected>6 месяцев</option>
+            <option value="12" id="opt-s12">12 месяцев</option>
+        </select>
+        <div id="safetyResult" class="result"></div>
+    </div>
+</div>
 
-            <label id="lbl-mort-years">Срок кредита (лет):</label>
-            <input type="number" id="mortYears" value="20" oninput="calcRealtyBattle();">
+<!-- ВКЛАДКА 4: ИПОТЕКА -->
+<div id="tab-realty" class="tab-content" style="display: none;">
+    <div class="card">
+        <label id="lbl-prop-cost">Стоимость недвижимости (руб):</label>
+        <input type="text" id="propCost" value="8 000 000" oninput="formatInputPrice(this); calcRealtyBattle();">
 
-            <div style="border-top: 1px solid rgba(0,0,0,0.08); margin-top: 15px; padding-top: 15px;">
-                <label id="lbl-rent-cost">Стоимость аренды в месяц (руб):</label>
-                <input type="text" id="rentCost" value="35 000" oninput="formatInputPrice(this); calcRealtyBattle();">
+        <label id="lbl-down-pay">Первоначальный взнос (руб):</label>
+        <input type="text" id="downPayment" value="2 000 000" oninput="formatInputPrice(this); calcRealtyBattle();">
 
-                <label id="lbl-rent-inf">Ежегодный рост аренды (инфляция %):</label>
-                <input type="number" id="rentInflation" value="6" oninput="calcRealtyBattle();">
+        <label id="lbl-mort-rate">Ставка по ипотеке (% в год):</label>
+        <input type="number" id="mortRate" value="18" oninput="calcRealtyBattle();">
 
-                <label id="lbl-inv-yield">Доходность инвестиций (% в год):</label>
-                <input type="number" id="invYield" value="16" oninput="calcRealtyBattle();">
-            </div>
-            <div id="realtyResult" class="result"></div>
+        <label id="lbl-mort-years">Срок кредита (лет):</label>
+        <input type="number" id="mortYears" value="20" oninput="calcRealtyBattle();">
+
+        <div style="border-top: 1px solid rgba(0,0,0,0.08); margin-top: 15px; padding-top: 15px;">
+            <label id="lbl-rent-cost">Стоимость аренды в месяц (руб):</label>
+            <input type="text" id="rentCost" value="35 000" oninput="formatInputPrice(this); calcRealtyBattle();">
+
+            <label id="lbl-rent-inf">Ежегодный рост аренды (инфляция %):</label>
+            <input type="number" id="rentInflation" value="6" oninput="calcRealtyBattle();">
+
+            <label id="lbl-inv-yield">Доходность инвестиций (% в год):</label>
+            <input type="number" id="invYield" value="16" oninput="calcRealtyBattle();">
         </div>
+        <div id="realtyResult" class="result"></div>
     </div>
+</div>
 </div> <!-- Закрываем общий контейнер .container -->
 <script>
     var globalDebts = [];
