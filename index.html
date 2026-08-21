@@ -2,7 +2,8 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Финансовый Аналитик Pro</title>
     <!-- Железобетонное подключение графиков с официального Cloudflare CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.5.1/chart.min.js"></script>
@@ -112,10 +113,14 @@
     <h2 id="txt-title">📊 Фин-Терминал Pro</h2>
 
     <div class="tabs">
-        <button id="btn1" class="tab-btn active" onclick="openTab('tab-compound', 'btn1')">📈 <span id="tab1-name">Портфель</span></button>
-        <button id="btn2" class="tab-btn" onclick="openTab('tab-debts', 'btn2')">📉 <span id="tab2-name">Долги</span></button>
-        <button id="btn3" class="tab-btn" onclick="openTab('tab-safety', 'btn3')">💰 <span id="tab3-name">Подушка</span></button>
-        <button id="btn4" class="tab-btn" onclick="openTab('tab-realty', 'btn4')">🏠 <span id="tab4-name">Ипотека</span></button>
+        <button id="btn1" class="tab-btn active" onclick="openTab('tab-compound', 'btn1')">📈 <span id="tab1-name">Портфель</span>
+        </button>
+        <button id="btn2" class="tab-btn" onclick="openTab('tab-debts', 'btn2')">📉 <span id="tab2-name">Долги</span>
+        </button>
+        <button id="btn3" class="tab-btn" onclick="openTab('tab-safety', 'btn3')">💰 <span id="tab3-name">Подушка</span>
+        </button>
+        <button id="btn4" class="tab-btn" onclick="openTab('tab-realty', 'btn4')">🏠 <span id="tab4-name">Ипотека</span>
+        </button>
     </div>
 
     <!-- ВКЛАДКА 1: ПОРТФЕЛЬ -->
@@ -156,8 +161,8 @@
                 </select>
             </div>
             <div id="assetResult" class="result"></div>
-            <div style="margin-top: 24px; position: relative; width: 100%; height: 220px;">
-                <canvas id="assetChart"></canvas>
+            <div style="margin-top: 24px; position: relative; width: 100%; height: 220px; display: block;">
+                <canvas id="assetChart" style="display: block; width: 100%; height: 100%;"></canvas>
             </div>
         </div>
     </div>
