@@ -1,11 +1,12 @@
-
 import telebot
 import time
 import requests
 import sqlite3
+from apscheduler.schedulers.background import BackgroundScheduler
+
 
 # Инициализируем бота
-TOKEN = 'TOKEN'
+TOKEN = 'token'
 bot = telebot.TeleBot(TOKEN)
 
 
@@ -65,35 +66,38 @@ def is_spam(chat_id):
 
 def get_forex_rates():
     try:
-        url = "https://cbr-xml-daily.ru"
+        # Международный шлюз, отдающий котировки относительно USD для всех стран
+        url = "https://er-api.com"
         response = requests.get(url, timeout=5)
         if response.status_code == 200:
-            valute = response.json()["Valute"]
-            usd_rub = valute["USD"]["Value"]
-            eur_rub = valute["EUR"]["Value"]
-            cny_rub = valute["CNY"]["Value"] / valute["CNY"]["Nominal"]
-            byn_rub = valute["BYN"]["Value"]
+            rates = response.json()["rates"]
 
-            usd_byn = usd_rub / byn_rub if byn_rub else 0
-            eur_byn = eur_rub / byn_rub if byn_rub else 0
+            # Рассчитываем кросс-курсы к RUB и BYN на основе доллара
+            usd_rub = rates["RUB"]
+            usd_byn = rates["BYN"]
+            usd_cny = rates["CNY"]
+
+            eur_rub = usd_rub / rates["EUR"]
+            eur_byn = usd_byn / rates["EUR"]
 
             return (
-                "📰 <b>МАКРОЭКОНОМИКА: ВАЛЮТНЫЙ ШЛЮЗ ЦБ РФ</b>\n"
-                "📌 <i>Анализ стабильности региональных валют</i>\n\n"
+                "📰 <b>МАКРОЭКОНОМИКА: МЕЖДУНАРОДНЫЙ ВАЛЮТНЫЙ ШЛЮЗ</b>\n"
+                "📌 <i>Синхронизация курсов в реальном времени (Глобальный API)</i>\n\n"
                 "💵 <b>Курсы к российскому рублю (RUB):</b>\n"
-                f"▪️ Доллар США: <code>{usd_rub:.2f} RUB</code>\n"
-                f"▪️ Еврозона: <code>{eur_rub:.2f} RUB</code>\n"
-                f"▪️ Юань КНР (10 CNY): <code>{cny_rub * 10:.2f} RUB</code>\n\n"
+                f"▪️ Доллар США (USD): <code>{usd_rub:.2f} RUB</code>\n"
+                f"▪️ Еврозона (EUR): <code>{eur_rub:.2f} RUB</code>\n"
+                f"▪️ Юань КНР (CNY): <code>{usd_rub / usd_cny:.2f} RUB</code>\n\n"
                 "🇧🇾 <b>Курсы к белорусскому рублю (BYN):</b>\n"
-                f"▪️ Доллар США: <code>{usd_byn:.4f} BYN</code>\n"
-                f"▪️ Еврозона: <code>{eur_byn:.4f} BYN</code>\n\n"
-                "💡 <b>Краткая сводка для инвестора:</b>\n"
-                "При ослаблении национальных валют финансовые аналитики рекомендуют удерживать до 30% капитала в твердых инструментах или юанях для защиты от девальвационных рисков.\n"
-                "📊 <i>Статус шлюза: Стабилен. Источник: Центробанк РФ.</i>"
+                f"▪️ Доллар США (USD): <code>{usd_byn:.4f} BYN</code>\n"
+                f"▪️ Еврозона (EUR): <code>{eur_byn:.4f} BYN</code>\n"
+                f"▪️ Российский рубль (100 RUB): <code>{(usd_byn / usd_rub) * 100:.4f} BYN</code>\n\n"
+                "💡 <b>Аналитическая сводка:</b>\n"
+                "Глобальный шлюз работает без геоблокировок и ограничений. Капитал рекомендуется диверсифицировать.\n"
+                "📊 <i>Статус: Стабилен. Источник: ExchangeRate Open API.</i>"
             )
     except Exception as e:
-        print(f"Ошибка валют ЦБ: {e}")
-    return "⚠️ Сырьевой шлюз временно перегружен. Запустите российский VPN для синхронизации."
+        print(f"Ошибка международного шлюза валют: {e}")
+    return "⚠️ Валютный шлюз временно перегружен. Повторите попытку позже."
 
 
 def get_moex_stocks():
@@ -358,6 +362,37 @@ def handle_incoming_text(message):
         parse_mode="Markdown"
     )
 
+
+# Функция, которая будет отправлять утреннюю сводку
+def send_morning_investment_news():
+    # Собираем свежие данные из наших прокачанных модулей
+    rates_text = get_forex_rates()
+    stocks_text = get_moex_stocks()
+
+    # Твой личный ID в Телеграм (или ID базы пользователей)
+    # Замени 123456789 на свой реальный Telegram ID, чтобы бот знал кому писать!
+    admin_chat_id = 867341337
+
+    morning_report = (
+        "☀️ <b>УТРЕННИЙ ФИНАНСОВЫЙ ТЕРМИНАЛ PRO</b>\n"
+        "📅 <i>Свежий макроэкономический срез рынков</i>\n\n"
+        f"{rates_text}\n\n"
+        f"{stocks_text}\n\n"
+        "🎯 <b>План на день:</b> Не совершайте импульсивных сделок, придерживайтесь стратегии!"
+    )
+
+    try:
+        bot.send_message(admin_chat_id, morning_report, parse_mode="HTML")
+    except Exception as e:
+        print(f"Ошибка утренней рассылки: {e}")
+
+
+# Запуск планировщика задач в фоновом режиме
+scheduler = BackgroundScheduler(timezone="Europe/Moscow")
+
+# Настраиваем отправку каждый день строго в 09:00 утра по Минску/Москве
+scheduler.add_job(send_morning_investment_news, 'cron', hour=9, minute=0)
+scheduler.start()
 
 if __name__ == '__main__':
     print("Профессиональное мультиядро фин-учета запущено...")
