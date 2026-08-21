@@ -1,14 +1,11 @@
-
-
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="ru" xmlns="http://www.w3.org/1999/html">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Финансовый Аналитик Pro</title>
-    <!-- ПРАВИЛЬНАЯ ОФИЦИАЛЬНАЯ ССЫЛКА НА ГРАФИКИ CDNJS -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.5.1/chart.min.js" integrity="sha512-mOiNIzRB+4/INX75lwv3+eSG+Sih4wQy+qS/+0mHkk2MjHZW6ABGN6eQD1MoV5Tv9KG+G3UAMy1vW3fk5goVXA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.5.1/chart.min.js" integrity="sha512-mOiNIzRB+4/INX75lwv3+eSG+Sih4wQy+qS/+0mHkk2MjHZW6ABGN6eQD1MoV5Tv9KG+G3UAMy1vW3fk5goVXA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-
+    <!-- Железобетонное подключение графиков с официального Cloudflare CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.5.1/chart.min.js"></script>
     <style>
         :root {
             --bg-color: #f4f6fa;
@@ -188,25 +185,25 @@
             </div>
 
             <div style="border-top: 1px solid rgba(0,0,0,0.08); margin-top: 20px; padding-top: 15px;">
-                            <label id="lbl-dextra">Ежемесячный ускоритель досрочного гашения:</label>
-            <input type="text" id="debtExtra" value="5 000" oninput="formatInputPrice(this); calcProDebts();">
+                <label id="lbl-dextra">Ежемесячный ускоритель досрочного гашения:</label>
+                <input type="text" id="debtExtra" value="5 000" oninput="formatInputPrice(this); calcProDebts();">
 
-            <label id="lbl-dstrat">Выберите стратегию оптимизации:</label>
-            <select id="debtStrategy" onchange="calcProDebts();">
-                <option value="avalanche" id="opt-avalanche" selected>⚡️ Кредитная Лавина (Экономия)</option>
-                <option value="snowball" id="opt-snowball">🚗 Снежный ком (Комфорт)</option>
-            </select>
+                <label id="lbl-dstrat">Выберите стратегию оптимизации:</label>
+                <select id="debtStrategy" onchange="calcProDebts();">
+                    <option value="avalanche" id="opt-avalanche" selected>⚡️ Кредитная Лавина (Экономия)</option>
+                    <option value="snowball" id="opt-snowball">🚗 Снежный ком (Комфорт)</option>
+                </select>
+            </div>
             <div id="snowballResult" class="result" style="display: none;"></div>
         </div>
     </div>
-
     <!-- ВКЛАДКА 3: ПОДУШКА -->
     <div id="tab-safety" class="tab-content" style="display: none;">
         <div class="card">
             <label id="lbl-sbase">📊 Бюджет критических трат (в месяц):</label>
             <input type="text" id="expBase" value="30 000" oninput="formatInputPrice(this); calcProSafetyNet();">
 
-            <label id="lbl-scomfort">🚗 Бюджет комфортных трат (в месяц):</label>
+            <label id="lbl-scomfort">🚗 Бюджет комфортных трат (в month):</label>
             <input type="text" id="expComfort" value="15 000" oninput="formatInputPrice(this); calcProSafetyNet();">
 
             <label id="lbl-spremium">🌟 Бюджет избыточных трат (в месяц):</label>
@@ -250,7 +247,7 @@
             <div id="realtyResult" class="result"></div>
         </div>
     </div>
-</div>
+</div> <!-- Закрываем общий контейнер .container -->
 <script>
     var globalDebts = [];
     var currentLang = 'ru';
@@ -560,7 +557,9 @@
         var survivalMonthly = base + (comfort * 0.5);
         var totalSurvivalStyle = survivalMonthly * period;
 
-        var resDiv = document.getElementById('safetyResult'); resDiv.style.display = 'block';
+        var resDiv = document.getElementById('safetyResult');
+        if (resDiv) resDiv.style.display = 'block';
+
         if (currentLang === 'ru') {
             resDiv.innerHTML = '🛡️ <b>Моделирование Резервного Фонда:</b><br><br>🟢 <b>Сценарий «Комфорт»:</b> <b>' + Math.round(totalComfortStyle).toLocaleString('ru-RU') + ' руб.</b><br>⚠️ <b>Сценарий «Выживание»:</b> <b>' + Math.round(totalSurvivalStyle).toLocaleString('ru-RU') + ' руб.</b><br><br>🏛 <b>Ликвидность резерва (20%/50%/30%):</b><br>• Кеш: ' + Math.round(totalComfortStyle*0.2).toLocaleString('ru-RU') + ' руб.<br>• Вклад: ' + Math.round(totalComfortStyle*0.5).toLocaleString('ru-RU') + ' руб.<br>• ОФЗ: ' + Math.round(totalComfortStyle*0.3).toLocaleString('ru-RU') + ' руб.';
         } else {
@@ -581,7 +580,7 @@
         var years = parseInt(document.getElementById('mortYears').value) || 0;
         var rentInf = (parseFloat(document.getElementById('rentInflation').value) || 0) / 100;
         var invYield = (parseFloat(document.getElementById('invYield').value) || 0) / 100;
-        
+
         var months = years * 12;
         var loanAmount = cost - downPay;
 
@@ -610,12 +609,12 @@
         if (resDiv) resDiv.style.display = 'block';
 
         if (currentLang === 'ru') {
-            var verdict = portfolio > cost ? 
-                '<span style="color: #2ecc71; font-weight: bold;">🏢 Стратегия Аренды выгоднее!</span> Накопленный капитал превышает стоимость квартиры.' : 
+            var verdict = portfolio > cost ?
+                '<span style="color: #2ecc71; font-weight: bold;">🏢 Стратегия Аренды выгоднее!</span> Накопленный капитал превышает стоимость квартиры.' :
                 '<span style="color: #2481cc; font-weight: bold;">🏠 Стратегия Ипотеки выгоднее!</span> Своя недвижимость защитила капитал лучше рынка.';
 
             if (resDiv) {
-                resDiv.innerHTML = 
+                resDiv.innerHTML =
                     '<b>🏦 Сценарий «Ипотека» за ' + years + ' лет:</b><br>' +
                     '• Ежемесячный платеж банкирам: <b>' + Math.round(mortgagePayment).toLocaleString('ru-RU') + ' руб.</b><br>' +
                     '• Всего выплатите банку: ' + Math.round(totalMortgagePaid).toLocaleString('ru-RU') + ' руб.<br>' +
@@ -626,12 +625,12 @@
                     '🏁 <b>Вердикт финансиста:</b><br>' + verdict;
             }
         } else {
-            var verdict = portfolio > cost ? 
-                '<span style="color: #2ecc71; font-weight: bold;">🏢 Rent & Invest wins!</span> Your capital grows larger than property value.' : 
+            var verdict = portfolio > cost ?
+                '<span style="color: #2ecc71; font-weight: bold;">🏢 Rent & Invest wins!</span> Your capital grows larger than property value.' :
                 '<span style="color: #2481cc; font-weight: bold;">🏠 Mortgage wins!</span> Property equity outperformed the investment strategy.';
 
             if (resDiv) {
-                resDiv.innerHTML = 
+                resDiv.innerHTML =
                     '<b>🏦 Mortgage Scenario (' + years + ' years):</b><br>' +
                     '• Monthly Bank Payment: <b>' + Math.round(mortgagePayment).toLocaleString('ru-RU') + ' rub.</b><br>' +
                     '• Total Paid to Bank: ' + Math.round(totalMortgagePaid).toLocaleString('ru-RU') + ' rub.<br>' +
@@ -644,7 +643,6 @@
         }
     }
 
-    // Первоначальный автоматический запуск расчетов
     updateAssetLabels();
     calcProAsset();
     calcProDebts();
@@ -654,4 +652,3 @@
 </div>
 </body>
 </html>
-
