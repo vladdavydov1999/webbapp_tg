@@ -97,8 +97,25 @@
 
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
+
+    <!-- Telegram Mini App SDK: без него Telegram не воспринимает страницу как Web App -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
 <body>
+    <script>
+        // Инициализация Mini App. Внутри Telegram разворачивает окно на весь экран,
+        // в обычном браузере (проверка вне Telegram) просто ничего не делает.
+        if (window.Telegram && window.Telegram.WebApp) {
+            var tg = window.Telegram.WebApp;
+            tg.ready();
+            tg.expand();
+            // Поддержка светлой/тёмной темы Telegram
+            if (tg.setHeaderColor) tg.setHeaderColor('#ffffff');
+            if (tg.setBackgroundColor) {
+                tg.setBackgroundColor(tg.colorScheme === 'dark' ? '#121214' : '#f4f6fa');
+            }
+        }
+    </script>
 
 <div class="container">
     <div class="lang-container">
