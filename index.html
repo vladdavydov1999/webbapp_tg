@@ -5,8 +5,6 @@
     <meta name="viewport"
           content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Финансовый Аналитик Pro</title>
-    <!-- Железобетонное подключение графиков с официального Cloudflare CDN -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.5.1/chart.min.js"></script>
     <style>
         :root {
             --bg-color: #f4f6fa;
@@ -161,9 +159,6 @@
                 </select>
             </div>
             <div id="assetResult" class="result"></div>
-            <!-- <div style="margin-top: 24px; position: relative; width: 100%; height: 220px; display: block;">
-                <canvas id="assetChart" style="display: block; width: 100%; height: 100%;"></canvas>
-            </div> -->
         </div>
     </div>
 </div>
@@ -209,7 +204,7 @@
         <label id="lbl-sbase">📊 Бюджет критических трат (в месяц):</label>
         <input type="text" id="expBase" value="30 000" oninput="formatInputPrice(this); calcProSafetyNet();">
 
-        <label id="lbl-scomfort">🚗 Бюджет комфортных трат (в month):</label>
+        <label id="lbl-scomfort">🚗 Бюджет комфортных трат (в месяц):</label>
         <input type="text" id="expComfort" value="15 000" oninput="formatInputPrice(this); calcProSafetyNet();">
 
         <label id="lbl-spremium">🌟 Бюджет избыточных трат (в месяц):</label>
@@ -423,9 +418,9 @@
         resDiv.style.display = 'block';
 
         if (currentLang === 'ru') {
-            resDiv.innerHTML = '📊 <b>Номинальный объем позиции:</b><br>• Итого на балансе: <b>' + Math.round(nominalTotal).toLocaleString() + ' ' + sign + '</b><br>• Налог на прирост: <span style="color: #e74c3c;">-' + Math.round(taxValue).toLocaleString() + '</span><br>• Чистый баланс: <b>' + Math.round(totalAfterTax).toLocaleString() + ' ' + sign + '</b><br><br>📉 <b>Реальная ценность (с учетом инфляции):</b><br>• С учетом инфляции: <span style="color: #2ecc71; font-weight: bold;">' + Math.round(realTotal).toLocaleString() + ' ' + sign + '</b><br><br>📥 Ваши личные вложения: ' + Math.round(totalInvested).toLocaleString();
+            resDiv.innerHTML = '📊 <b>Номинальный объем позиции:</b><br>• Итого на балансе: <b>' + Math.round(nominalTotal).toLocaleString() + ' ' + sign + '</b><br>• Налог на прирост: <span style="color: #e74c3c;">-' + Math.round(taxValue).toLocaleString() + '</span><br>• Чистый баланс: <b>' + Math.round(totalAfterTax).toLocaleString() + ' ' + sign + '</b><br><br>📉 <b>Реальная ценность (с учетом инфляции):</b><br>• С учетом инфляции: <span style="color: #2ecc71; font-weight: bold;">' + Math.round(realTotal).toLocaleString() + ' ' + sign + '</span><br><br>📥 Ваши личные вложения: ' + Math.round(totalInvested).toLocaleString();
         } else {
-            resDiv.innerHTML = '📊 <b>Nominal Position Volume:</b><br>• Total Balance: <b>' + Math.round(nominalTotal).toLocaleString() + ' ' + sign + '</b><br>• Capital Gains Tax: <span style="color: #e74c3c;">-' + Math.round(taxValue).toLocaleString() + '</span><br>• Net Balance: <b>' + Math.round(totalAfterTax).toLocaleString() + ' ' + sign + '</b><br><br>📉 <b>Real Value (Inflation Adjusted):</b><br>• Real Value: <span style="color: #2ecc71; font-weight: bold;">' + Math.round(realTotal).toLocaleString() + ' ' + sign + '</b><br><br>📥 Total Invested by You: ' + Math.round(totalInvested).toLocaleString();
+            resDiv.innerHTML = '📊 <b>Nominal Position Volume:</b><br>• Total Balance: <b>' + Math.round(nominalTotal).toLocaleString() + ' ' + sign + '</b><br>• Capital Gains Tax: <span style="color: #e74c3c;">-' + Math.round(taxValue).toLocaleString() + '</span><br>• Net Balance: <b>' + Math.round(totalAfterTax).toLocaleString() + ' ' + sign + '</b><br><br>📉 <b>Real Value (Inflation Adjusted):</b><br>• Real Value: <span style="color: #2ecc71; font-weight: bold;">' + Math.round(realTotal).toLocaleString() + ' ' + sign + '</span><br><br>📥 Total Invested by You: ' + Math.round(totalInvested).toLocaleString();
         }
 
         var canvasEl = document.getElementById('assetChart');
@@ -642,7 +637,7 @@
                     '• Interest Overpayment: <span style="color: #e74c3c;">' + Math.round(interestOverpayment).toLocaleString('ru-RU') + ' rub.</span><br><br>' +
                     '<b>📈 Rent & Invest Scenario:</b><br>' +
                     '• Accumulated Invest Portfolio: <b>' + Math.round(portfolio).toLocaleString('ru-RU') + ' rub.</b><br>' +
-                    '• Total Rent Expenses: ' + Math.round(totalMortgagePaid).toLocaleString('ru-RU') + ' rub.<br><br>' +
+                    '• Total Rent Expenses: ' + Math.round(totalRentPaid).toLocaleString('ru-RU') + ' rub.<br><br>' +
                     '🏁 <b>Financial Verdict:</b><br>' + verdict;
             }
         }
