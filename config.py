@@ -1,8 +1,10 @@
 """
 Централизованная конфигурация бота.
 
-Секреты и настройки читаются из переменных окружения / файла .env,
-чтобы они не попадали в исходный код и в систему контроля версий.
+Значения задаются как обычный Python-код: ИМЯ = "значение".
+Если вы создадите файл .env (см. .env.example), его значения перекроют эти.
+Внимание: сюда НЕ нужно вставлять строки из .env вида "KEY=value" —
+это не Python, это синтаксис другого файла.
 """
 
 import os
@@ -14,22 +16,23 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 load_dotenv(os.path.join(BASE_DIR, ".env"))
 
 
-def _required(name: str) -> str:
-    """Возвращает обязательную переменную окружения или падает с понятной ошибкой."""
-    value = os.getenv(name, "").strip()
-    if not value:
-        raise RuntimeError(
-            f"Не задана обязательная переменная окружения {name}. "
-            f"Скопируйте .env.example в .env и заполните её."
-        )
-    return value
+def _env(name: str, default: str) -> str:
+    """Значение из переменной окружения/.env или значение по умолчанию."""
+    return os.getenv(name, default).strip()
 
 
-TOKEN = _required("TELEGRAM_BOT_TOKEN")
-MINI_APP_URL = _required("MINI_APP_URL")
+# --- Значения по умолчанию. Можно перекрыть через файл .env. ---------------
+TOKEN = _env(
+    "TELEGRAM_BOT_TOKEN",
+)
 
-# chat_id получателя утренней рассылки; 0 означает "рассылка отключена"
-ADMIN_CHAT_ID = int(os.getenv("ADMIN_CHAT_ID", "0").strip() or 0)
+MINI_APP_URL = _env(
+    "MINI_APP_URL",
+)
 
-# Часовой пояс для планировщика утренних новостей
-TIMEZONE = os.getenv("TZ", "Europe/Moscow")
+# chat_id получателя утренней рассылки; 0 = рассылка отключена
+ADMIN_CHAT_ID = int(_env("ADMIN_CHAT_ID", "") or 0)
+
+# Часовой пояс утреннего отчёта. Используем BOT_TIMEZONE, а не TZ,
+# чтобы PyCharm/ОС не подменяли значение системным TZ.
+TIMEZONE = _env("BOT_TIMEZONE", "Europe/Moscow") or "Europe/Moscow"
