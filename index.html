@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport"
           content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Финансовый Аналитик Pro</title>
+    <title>Капитал — финансовый терминал</title>
     <style>
         :root {
             --bg-color: #f4f6fa;
@@ -125,7 +125,15 @@
         </div>
     </div>
 
-    <h2 id="txt-title">📊 Фин-Терминал Pro</h2>
+    <h2 id="txt-title">💎 Капитал</h2>
+
+    <!-- Панель рынка (заполняется из API МосБиржи) -->
+    <div id="market-strip" class="card" style="padding:16px 18px;margin-bottom:20px;">
+        <div style="font-size:12px;font-weight:800;opacity:.6;margin-bottom:8px;">
+            🇷🇺 РЫНОК МОСБИРЖИ <span id="market-status" style="float:right"></span>
+        </div>
+        <div id="market-body" style="font-size:14px;line-height:1.7;">Загрузка…</div>
+    </div>
 
     <div class="tabs">
         <button id="btn1" class="tab-btn active" onclick="openTab('tab-compound', 'btn1')">📈 <span id="tab1-name">Портфель</span>
@@ -665,6 +673,67 @@
     calcProDebts();
     calcProSafetyNet();
     calcRealtyBattle();
+</script>
+
+<script>
+// ---------------------------------------------------------------------------
+// Интеграция Mini App с API «Капитал»
+// ВАЖНО: замените API_BASE на адрес вашего API-сервера (см. config.API_PUBLIC_URL).
+// В проде: https://api.ваш-домен.ru ; локально: http://localhost:8000
+// ---------------------------------------------------------------------------
+(function () {
+    var API_BASE = (localStorage.getItem('capital_api_base') || 'http://localhost:8000');
+    var token = localStorage.getItem('capital_token') || '';
+
+    function fmt(n, d) { return Number(n || 0).toLocaleString('ru-RU', {minimumFractionDigits: d||2, maximumFractionDigits: d||2}); }
+    function arrow(v) { return (v >= 0) ? '<span style="color:#2ecc71">▲ ' + v.toFixed(2) + '%</span>'
+                                        : '<span style="color:#e74c3c">▼ ' + v.toFixed(2) + '%</span>'; }
+
+    async function loadMarket() {
+        var statusEl = document.getElementById('market-status');
+        var bodyEl = document.getElementById('market-body');
+        try {
+            var res = await fetch(API_BASE + '/market/indices');
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            var indices = await res.json();
+            var lines = [];
+            ['IMOEX', 'RTSI'].forEach(function (k) {
+                if (indices[k]) lines.push('📈 <b>' + k + '</b>: ' + fmt(indices[k][0]) + '  ' + arrow(indices[k][1]));
+            });
+            var res2 = await fetch(API_BASE + '/market/stocks');
+            var stocks = await res2.json();
+            (stocks.stocks || []).slice(0, 5).forEach(function (s) {
+                lines.push('💼 ' + s.name + ' (' + s.ticker + '): ' + fmt(s.price) + ' ₽  ' + arrow(s.change_pct));
+            });
+            bodyEl.innerHTML = lines.join('<br>') || 'Нет данных';
+            statusEl.textContent = '● live';
+        } catch (e) {
+            bodyEl.innerHTML = '⚠️ API недоступно. Проверьте настройку API_BASE.';
+            statusEl.textContent = 'offline';
+            console.error(e);
+        }
+    }
+
+    // Авторизация по initData (если открыты внутри Telegram)
+    async function tryAuth() {
+        if (window.Telegram && window.Telegram.WebApp && Telegram.WebApp.initData) {
+            try {
+                var r = await fetch(API_BASE + '/auth', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({init_data: Telegram.WebApp.initData})
+                });
+                if (r.ok) {
+                    var d = await r.json();
+                    localStorage.setItem('capital_token', d.token);
+                    token = d.token;
+                }
+            } catch (e) { console.error('Auth failed', e); }
+        }
+    }
+
+    tryAuth().then(loadMarket);
+})();
 </script>
 </div>
 </body>
