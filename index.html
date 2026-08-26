@@ -42,6 +42,13 @@
 
         .container { max-width: 400px; margin: 0 auto; position: relative; }
 
+        /* На широком экране (десктоп) вкладки раскрываются во всю ширину,
+           на смартфоне остаются узкой телефонной колонкой. */
+        @media (min-width: 641px) {
+            .container { max-width: 100%; padding: 24px 32px 48px; }
+            .tab-content .card { max-width: 760px; margin-left: auto; margin-right: auto; }
+        }
+
         .lang-container { display: flex; justify-content: center; margin-bottom: 24px; }
         .lang-switcher { background: rgba(0, 0, 0, 0.05); padding: 3px; border-radius: 10px; display: inline-flex; gap: 2px; }
         @media (prefers-color-scheme: dark) { .lang-switcher { background: rgba(255, 255, 255, 0.05); } }
@@ -186,7 +193,6 @@
             <div id="assetResult" class="result"></div>
         </div>
     </div>
-</div>
 
 <!-- ВКЛАДКА 2: ДОЛГИ -->
 <div id="tab-debts" class="tab-content" style="display: none;">
